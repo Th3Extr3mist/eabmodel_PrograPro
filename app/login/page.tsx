@@ -1,17 +1,16 @@
-// app/login/page.tsx
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
     if (!email || !password) {
       setError("Las casillas deben completarse");
       return;
@@ -21,11 +20,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+    <div className="flex flex-col items-center min-h-screen bg-gray-100">
+      {/* Navbar */}
+      <nav className="w-full bg-blue-500 text-white py-3 px-6 flex justify-between">
+        <h1 className="text-lg font-bold">Iniciar Sesión</h1>
+        <div>
+          <button
+            onClick={() => router.push("/register")}
+            className="bg-white text-blue-500 px-4 py-1 rounded mx-2"
+          >
+            Registrarse
+          </button>
+          <button
+            onClick={() => router.push("/organize")}
+            className="bg-white text-blue-500 px-4 py-1 rounded"
+          >
+            Organizador
+          </button>
+        </div>
+      </nav>
+
+      {/* Formulario de Login */}
+      <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
         <h2 className="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-        
+
         <form onSubmit={handleLogin}>
           <input
             type="email"
