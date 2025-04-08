@@ -2,7 +2,8 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { create } from "zustand";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
+import GoogleMaps from "../components/GoogleMaps"; // Importamos el componente del mapa
 
 // Estado global para controlar asistencia a eventos
 interface EventStore {
@@ -28,19 +29,38 @@ const events = [
   { id: 4, title: "Networking Creativo", description: "Conecta con creativos de diferentes industrias.", image: "/images/creative.jpg" },
 ];
 
+// Ubicaciones de los eventos
+const eventMarkers = [
+  { lat: 19.432608, lng: -99.133209 }, // Evento 1
+  { lat: 19.45127, lng: -99.15488 }, // Evento 2
+  { lat: 19.42847, lng: -99.12766 }, // Evento 3
+  { lat: 19.40033, lng: -99.16642 }, // Evento 4
+];
+
 export default function EventList() {
   const { attending, toggleAttendance } = useEventStore();
-  const router = useRouter(); 
+  const router = useRouter();
 
   const handleLogout = () => {
     router.push("/login"); // Redirigir al login
   };
-  
+
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100">
-      <h1 className="text-4xl font-bold mb-6">Eventos</h1>
+      {/* Navbar */}
+      <nav className="w-full bg-blue-500 text-white py-3 px-6 flex justify-between">
+        <h1 className="text-lg font-bold">Eventos</h1>
+        <button
+          onClick={handleLogout}
+          className="bg-white text-blue-500 px-4 py-1 rounded"
+        >
+          Cerrar Sesión
+        </button>
+      </nav>
 
-      {events.map((event) => (
+      <h1 className="text-4xl font-bold mt-6 mb-6">Eventos</h1>
+
+      {events.map((event, index) => (
         <motion.div
           key={event.id}
           className="w-full max-w-md bg-white p-4 rounded-lg shadow-md mb-4"
@@ -60,12 +80,11 @@ export default function EventList() {
         </motion.div>
       ))}
 
-      <button 
-        onClick={handleLogout} 
-        className="mt-6 px-6 py-3 bg-red-500 text-white font-bold rounded-lg"
-      >
-        Cerrar Sesión
-      </button>
+      {/* Google Maps */}
+      <div className="w-full max-w-4xl mt-10">
+        <h2 className="text-2xl font-bold mb-4">Ubicaciones de los Eventos</h2>
+        <GoogleMaps eventMarkers={eventMarkers} />
+      </div>
     </div>
   );
 }
