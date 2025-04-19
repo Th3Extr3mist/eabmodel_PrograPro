@@ -10,23 +10,45 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!username || !email || !password || !confirmPassword) {
       setError("Todos los campos son obligatorios");
       return;
     }
-
+  
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
-
-    setError("");
-    router.push("/eventos"); // Redirige a la página de eventos
+  
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_name: username,
+          email,
+          user_password: password,
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        setError(data.error || "Error al registrar");
+        return;
+      }
+  
+      // Redirigir si fue exitoso
+      router.push("/eventos");
+    } catch (err) {
+      console.error(err);
+      setError("Error de conexión con el servidor");
+    }
   };
-
+  
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
       {/* Navbar */}
