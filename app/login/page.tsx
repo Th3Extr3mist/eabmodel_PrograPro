@@ -9,16 +9,37 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+  
     if (!email || !password) {
       setError("Las casillas deben completarse");
       return;
     }
-    setError("");
-    router.push("/eventos");
+  
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        setError(data.error || "Credenciales inválidas");
+        return;
+      }
+  
+      // Aquí puedes guardar sesión si quieres (por ejemplo con cookies o Zustand)
+      // y luego redirigir al dashboard de eventos
+      router.push("/eventos");
+    } catch (err) {
+      console.error("Error al hacer login:", err);
+      setError("Error al conectarse al servidor");
+    }
   };
-
+  
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
       {/* Navbar */}
