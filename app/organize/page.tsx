@@ -44,8 +44,6 @@ export default function EventoForm() {
       ...evento,
     };
 
-    console.log("Datos del evento:", newEvento);
-
     try {
       const response = await fetch("URL_DE_TU_API", {
         method: "POST",
@@ -76,13 +74,13 @@ export default function EventoForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 text-gray-900">
       {/* Navbar */}
-      <nav className="w-full bg-blue-500 text-white py-3 px-6 flex justify-between">
-        <h1 className="text-lg font-bold">Registro de Evento</h1>
+      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
+        <h1 className="text-lg font-bold text-gray-900">Registro de Evento</h1>
         <button
           onClick={() => router.push("/login")}
-          className="bg-white text-blue-500 px-4 py-1 rounded"
+          className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
         >
           Cerrar Sesión
         </button>
@@ -91,7 +89,7 @@ export default function EventoForm() {
       {/* Formulario */}
       <div className="flex justify-center items-center mt-10">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          <h2 className="text-2xl font-bold mb-4 text-center">Crear Evento</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Evento</h2>
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
           <form onSubmit={handleSubmit}>
@@ -163,7 +161,7 @@ export default function EventoForm() {
 
             <button
               type="submit"
-              className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
             >
               Guardar Evento
             </button>

@@ -11,50 +11,48 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!email || !password) {
       setError("Las casillas deben completarse");
       return;
     }
-  
+
     try {
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await res.json();
-  
+
       if (!res.ok) {
         setError(data.error || "Credenciales inválidas");
         return;
       }
-  
-      // Aquí puedes guardar sesión si quieres (por ejemplo con cookies o Zustand)
-      // y luego redirigir al dashboard de eventos
+
       router.push("/eventos");
     } catch (err) {
       console.error("Error al hacer login:", err);
       setError("Error al conectarse al servidor");
     }
   };
-  
+
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
       {/* Navbar */}
-      <nav className="w-full bg-blue-500 text-white py-3 px-6 flex justify-between">
-        <h1 className="text-lg font-bold">Iniciar Sesión</h1>
+      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
+        <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
         <div>
           <button
             onClick={() => router.push("/register")}
-            className="bg-white text-blue-500 px-4 py-1 rounded mx-2"
+            className="bg-blue-500 text-white px-4 py-1 rounded mx-2 hover:bg-blue-600"
           >
             Registrarse
           </button>
           <button
             onClick={() => router.push("/organize")}
-            className="bg-white text-blue-500 px-4 py-1 rounded"
+            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
           >
             Organizador
           </button>
@@ -63,7 +61,7 @@ export default function LoginPage() {
 
       {/* Formulario de Login */}
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
-        <h2 className="text-2xl font-bold mb-4 text-center">Iniciar Sesión</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Iniciar Sesión</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <form onSubmit={handleLogin}>
@@ -96,7 +94,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
           >
             Login
           </button>

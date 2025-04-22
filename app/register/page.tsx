@@ -12,17 +12,17 @@ export default function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!username || !email || !password || !confirmPassword) {
       setError("Todos los campos son obligatorios");
       return;
     }
-  
+
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
-  
+
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -33,30 +33,29 @@ export default function RegisterPage() {
           user_password: password,
         }),
       });
-  
+
       const data = await res.json();
-  
+
       if (!res.ok) {
         setError(data.error || "Error al registrar");
         return;
       }
-  
-      // Redirigir si fue exitoso
+
       router.push("/eventos");
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
     }
   };
-  
+
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
       {/* Navbar */}
-      <nav className="w-full bg-blue-500 text-white py-3 px-6 flex justify-between">
-        <h1 className="text-lg font-bold">Registro</h1>
+      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
+        <h1 className="text-lg font-bold text-gray-900">Registro</h1>
         <button 
           onClick={() => router.push("/login")} 
-          className="bg-white text-blue-500 px-4 py-1 rounded"
+          className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
         >
           Volver al Login
         </button>
@@ -64,7 +63,7 @@ export default function RegisterPage() {
 
       {/* Formulario de Registro */}
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
-        <h2 className="text-2xl font-bold mb-4 text-center">Crear Cuenta</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Cuenta</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <form onSubmit={handleRegister}>
@@ -106,7 +105,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
           >
             Crear Usuario
           </button>
