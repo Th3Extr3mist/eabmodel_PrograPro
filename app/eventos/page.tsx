@@ -39,9 +39,16 @@ export default function EventList() {
   const { attending, toggleAttendance } = useEventStore();
   const router = useRouter();
 
-  const handleLogout = () => {
-    router.push("/login");
-  };
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+      });
+      router.push("/login");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  }; 
 
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">

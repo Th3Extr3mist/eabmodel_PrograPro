@@ -41,12 +41,19 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/eventos");
+      // ✅ Guardar el token como cookie
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`; // Cookie por 1 hora
+      }
+
+      // Redirigir con window.location.assign para forzar recarga
+      window.location.assign("/eventos");
+
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
     }
-  };
+  };  
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">

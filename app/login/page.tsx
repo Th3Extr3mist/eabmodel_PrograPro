@@ -7,36 +7,41 @@ export default function LoginPage() {
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // En tu handleLogin:
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    if (!email || !password) {
-      setError("Las casillas deben completarse");
-      return;
-    }
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      credentials: "include", // Asegura que las cookies se envíen/reciban
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Credenciales inválidas");
-        return;
+    if (res.ok) {
+      // Verificar manualmente la autenticación
+      const authCheck = await fetch("/api/auth/check");
+      if (authCheck.ok) {
+        router.push("/eventos");
+        router.refresh(); // Forzar actualización del router
+      } else {
+        setError("Error al establecer la sesión");
       }
-
-      router.push("/eventos");
-    } catch (err) {
-      console.error("Error al hacer login:", err);
-      setError("Error al conectarse al servidor");
+    } else {
+      const error = await res.json();
+      setError(error.error || "Error al iniciar sesión");
     }
-  };
+  } catch (err) {
+    setError("Error de conexión");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
