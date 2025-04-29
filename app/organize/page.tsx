@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Definición de la estructura del objeto Evento
 interface Evento {
   id: string;
   nombre_evento: string;
@@ -14,6 +15,7 @@ interface Evento {
 }
 
 export default function EventoForm() {
+  // Estado para almacenar los datos del formulario sin el "id"
   const [evento, setEvento] = useState<Omit<Evento, "id">>({
     nombre_evento: "",
     fecha: "",
@@ -25,22 +27,24 @@ export default function EventoForm() {
   });
 
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const router = useRouter(); 
 
+  // Maneja los cambios en los inputs y actualiza el estado
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setEvento((prev) => ({
       ...prev,
-      [name]: name === "precio" ? parseFloat(value) || 0 : value,
+      [name]: name === "precio" ? parseFloat(value) || 0 : value, // Convierte "precio" a número
     }));
   };
 
+  // Maneja el envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault(); // Evita el recargo de página
+    setError(null); // Limpia errores previos
 
     const newEvento: Evento = {
-      id: crypto.randomUUID(),
+      id: crypto.randomUUID(), // Genera un ID único para el evento
       ...evento,
     };
 
@@ -53,11 +57,10 @@ export default function EventoForm() {
         body: JSON.stringify(newEvento),
       });
 
-      if (!response.ok) {
-        throw new Error("Error al guardar el evento");
-      }
+      if (!response.ok) throw new Error("Error al guardar el evento");
 
       alert("✅ Evento guardado correctamente!");
+      // Reinicia el formulario
       setEvento({
         nombre_evento: "",
         fecha: "",
@@ -86,13 +89,14 @@ export default function EventoForm() {
         </button>
       </nav>
 
-      {/* Formulario */}
+      {/* Contenedor del formulario */}
       <div className="flex justify-center items-center mt-10">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
           <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Evento</h2>
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
           <form onSubmit={handleSubmit}>
+            {/* Campos del formulario */}
             <input
               type="text"
               name="nombre_evento"
@@ -159,6 +163,7 @@ export default function EventoForm() {
               required
             />
 
+            {/* Botón para enviar */}
             <button
               type="submit"
               className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"

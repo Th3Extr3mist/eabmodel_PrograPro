@@ -8,44 +8,45 @@ export default function LoginPage() {
   const [error, setError] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const router = useRouter();
+  const router = useRouter(); 
 
-  // En tu handleLogin:
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setIsLoading(true);
+  // Función para manejar el envío del formulario
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); 
+    setIsLoading(true); 
 
-  try {
-    const res = await fetch("/api/login", {
-      method: "POST",
-      credentials: "include", // Asegura que las cookies se envíen/reciban
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      // Enviar solicitud de login a la API
+      const res = await fetch("/api/login", {
+        method: "POST",
+        credentials: "include", // Incluir cookies en la solicitud
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (res.ok) {
-      // Verificar manualmente la autenticación
-      const authCheck = await fetch("/api/auth/check");
-      if (authCheck.ok) {
-        router.push("/eventos");
-        router.refresh(); // Forzar actualización del router
+      if (res.ok) {
+        // Verificación secundaria de autenticación
+        const authCheck = await fetch("/api/auth/check");
+        if (authCheck.ok) {
+          router.push("/eventos"); // Redirige a la página de eventos
+          router.refresh(); // Refresca para asegurar que el estado se actualiza
+        } else {
+          setError("Error al establecer la sesión");
+        }
       } else {
-        setError("Error al establecer la sesión");
+        const error = await res.json();
+        setError(error.error || "Error al iniciar sesión");
       }
-    } else {
-      const error = await res.json();
-      setError(error.error || "Error al iniciar sesión");
+    } catch (err) {
+      setError("Error de conexión");
+    } finally {
+      setIsLoading(false); 
     }
-  } catch (err) {
-    setError("Error de conexión");
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
-      {/* Navbar */}
+      {/* Navbar superior */}
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
         <div>
@@ -64,12 +65,15 @@ const handleLogin = async (e: React.FormEvent) => {
         </div>
       </nav>
 
-      {/* Formulario de Login */}
+      {/* Formulario de inicio de sesión */}
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Iniciar Sesión</h2>
+
+        {/* Mensaje de error si lo hay */}
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <form onSubmit={handleLogin}>
+          {/* Campo de correo */}
           <input
             type="email"
             placeholder="Correo Electrónico"
@@ -79,6 +83,7 @@ const handleLogin = async (e: React.FormEvent) => {
             required
           />
 
+          {/* Campo de contraseña con botón para mostrar/ocultar */}
           <div className="relative w-full">
             <input
               type={showPassword ? "text" : "password"}
@@ -97,6 +102,7 @@ const handleLogin = async (e: React.FormEvent) => {
             </button>
           </div>
 
+          {/* Botón de enviar */}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
