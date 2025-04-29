@@ -1,6 +1,13 @@
-import type { Metadata } from "next";
+// app/layout.tsx
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import RouteTransitionSpinner from './components/RouteTransitionSpinner';
+
+const inter = Inter({ subsets: ['latin'] });
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,14 +26,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="es">
+      <body className={inter.className}>
+        <RouteTransitionSpinner />
         {children}
       </body>
     </html>
