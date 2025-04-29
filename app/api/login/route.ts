@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { error: "Usuario no encontrado" },
+        { error: "Credenciales incorrectas" },
         { status: 401 }
       );
     }
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     if (password !== user.user_password) {
       return NextResponse.json(
-        { error: "Contraseña incorrecta" },
+        { error: "Credenciales incorrectas" },
         { status: 401 }
       );
     }

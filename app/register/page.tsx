@@ -7,6 +7,8 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -41,19 +43,16 @@ export default function RegisterPage() {
         return;
       }
 
-      // ✅ Guardar el token como cookie
       if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`; // Cookie por 1 hora
+        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`; // 1 hora
       }
 
-      // Redirigir con window.location.assign para forzar recarga
       window.location.assign("/eventos");
-
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
     }
-  };  
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
@@ -92,23 +91,43 @@ export default function RegisterPage() {
             required
           />
 
-          <input
-            type="password"
-            placeholder="Contraseña"
-            className="w-full p-2 border rounded mb-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          {/* Contraseña */}
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Contraseña"
+              className="w-full p-2 border rounded mb-2 pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-2 text-sm text-gray-500"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Ocultar" : "Mostrar"}
+            </button>
+          </div>
 
-          <input
-            type="password"
-            placeholder="Confirmar Contraseña"
-            className="w-full p-2 border rounded mb-4"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
+          {/* Confirmar Contraseña */}
+          <div className="relative w-full">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirmar Contraseña"
+              className="w-full p-2 border rounded mb-4 pr-10"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-2 text-sm text-gray-500"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? "Ocultar" : "Mostrar"}
+            </button>
+          </div>
 
           <button
             type="submit"

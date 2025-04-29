@@ -93,7 +93,7 @@ const handleLogin = async (e: React.FormEvent) => {
               className="absolute right-2 top-2 text-sm text-gray-500"
               onClick={() => setShowPassword(!showPassword)}
             >
-              {showPassword ? "🙈" : "👁️"}
+              {showPassword ? "Ocultar" : "Mostrar"}
             </button>
           </div>
 
