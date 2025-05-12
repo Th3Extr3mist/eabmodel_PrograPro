@@ -37,71 +37,61 @@ export default function LoginPage() {
       setError("Error al conectarse al servidor");
     }
   };
-
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-orange-600 to-orange-900 text-gray-900">
-      {/* Navbar */}
-      <nav className="w-full bg-gradient-to-b from-orange-600 to-orange-900 rounded-lg border-gray-500 py-3 px-6 flex justify-between items-center">
-        <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
-        <div>
-          <button
-            onClick={() => router.push("/register")}
-            className="bg-blue-500 text-white px-4 py-1 rounded mx-2 hover:bg-blue-600"
-          >
-            Registrarse
-          </button>
-          
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-500 to-orange-400">
+      <form 
+        //onSubmit={handleSubmit} 
+        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm"
+      >
+        <div className="absolute top-6 left-6 flex items-center space-x-2">
+        <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+        <span className="text-white font-semibold text-lg">AppName</span>
         </div>
-      </nav>
-
-      {/* Formulario de Login */}
-      <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
-        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Iniciar Sesión</h2>
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-        <form onSubmit={handleLogin}>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
+        
+        <input
+          type="email"
+          placeholder="Correo Electrónico"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full mb-4 p-3 border rounded-md text-gray-800"
+          required
+        />
+        <div className="relative mb-4">
           <input
-            type="email"
-            placeholder="Correo Electrónico"
-            className="w-full p-2 border rounded mb-2"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 border rounded-md text-gray-800"
             required
           />
-
-          <div className="relative w-full">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Contraseña"
-              className="w-full p-2 border rounded mb-4 pr-10"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              type="button"
-              className="absolute right-2 top-2 text-sm text-gray-500"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? "🙈" : "👁️"}
-            </button>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white p-2 mb-2 rounded hover:bg-blue-700"
+          <span 
+            onClick={() => setShowPassword(!showPassword)} 
+            className="absolute top-3 right-4 cursor-pointer"
           >
-            Login
-          </button>
-          <button
-            onClick={() => router.push("/organize")}
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-          >
-            Organizador
-          </button>
+            {showPassword ? '🙈' : '👁️'}
+          </span>
+        </div>
+
+        <a href="#" className="text-sm text-blue-500 hover:underline mb-4 block">¿Olvidaste tu contraseña?</a>
         
-        </form>
-      </div>
+        <button 
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700"
+        >
+          Login
+        </button>
+
+        <button 
+          type="button"
+          onClick={() => router.push("/register")}
+          className="w-full mt-2 border border-blue-600 text-blue-600 py-2 rounded-md hover:bg-blue-50"
+        >
+          Registrate
+        </button>
+      </form>
     </div>
   );
+  
 }
