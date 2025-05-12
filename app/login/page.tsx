@@ -38,7 +38,8 @@ export default function LoginPage() {
     }
   };
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-500 to-orange-400">
+    /*genera un diseño de color en gradiente (morado a naranja) de esquina izq-superior a esquina der-inferior*/
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-600 to-orange-400"> 
       <form 
         //onSubmit={handleSubmit} 
         className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm"
@@ -54,7 +55,7 @@ export default function LoginPage() {
           placeholder="Correo Electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 p-3 border rounded-md text-gray-800"
+          className="w-full mb-4 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
           required
         />
         <div className="relative mb-4">
@@ -63,12 +64,12 @@ export default function LoginPage() {
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 border rounded-md text-gray-800"
+            className="w-full p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             required
           />
           <span 
             onClick={() => setShowPassword(!showPassword)} 
-            className="absolute top-3 right-4 cursor-pointer"
+            className="absolute top-3 right-4 cursor-pointer text-gray-500 hover:text-gray-700"
           >
             {showPassword ? '🙈' : '👁️'}
           </span>
