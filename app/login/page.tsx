@@ -39,9 +39,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
+    <div className="flex flex-col items-center min-h-screen bg-gradient-to-b from-orange-600 to-orange-900 text-gray-900">
       {/* Navbar */}
-      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
+      <nav className="w-full bg-gradient-to-b from-orange-600 to-orange-900 rounded-lg border-gray-500 py-3 px-6 flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
         <div>
           <button
@@ -50,12 +50,7 @@ export default function LoginPage() {
           >
             Registrarse
           </button>
-          <button
-            onClick={() => router.push("/organize")}
-            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-          >
-            Organizador
-          </button>
+          
         </div>
       </nav>
 
@@ -94,10 +89,17 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+            className="w-full bg-blue-600 text-white p-2 mb-2 rounded hover:bg-blue-700"
           >
             Login
           </button>
+          <button
+            onClick={() => router.push("/organize")}
+            className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+          >
+            Organizador
+          </button>
+        
         </form>
       </div>
     </div>
