@@ -2,171 +2,124 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface Evento {
-  id: string;
-  nombre_evento: string;
-  fecha: string;
-  descripcion: string;
-  hora_inicio: string;
-  hora_cierre: string;
-  ubicacion: string;
-  precio: number;
-}
-
-export default function EventoForm() {
-  const [evento, setEvento] = useState<Omit<Evento, "id">>({
-    nombre_evento: "",
-    fecha: "",
-    descripcion: "",
-    hora_inicio: "",
-    hora_cierre: "",
-    ubicacion: "",
-    precio: 0,
-  });
-
-  const [error, setError] = useState<string | null>(null);
+export default function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEvento((prev) => ({
-      ...prev,
-      [name]: name === "precio" ? parseFloat(value) || 0 : value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
-    const newEvento: Evento = {
-      id: crypto.randomUUID(),
-      ...evento,
-    };
+    if (!username || !email || !password || !confirmPassword) {
+      setError("Todos los campos son obligatorios");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
 
     try {
-      const response = await fetch("URL_DE_TU_API", {
+      const res = await fetch("/api/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newEvento),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_name: username,
+          email,
+          user_password: password,
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error("Error al guardar el evento");
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Error al registrar");
+        return;
       }
 
-      alert("✅ Evento guardado correctamente!");
-      setEvento({
-        nombre_evento: "",
-        fecha: "",
-        descripcion: "",
-        hora_inicio: "",
-        hora_cierre: "",
-        ubicacion: "",
-        precio: 0,
-      });
-    } catch (error) {
-      console.error("Error:", error);
-      setError("❌ Hubo un error al guardar el evento");
+      router.push("/eventos");
+    } catch (err) {
+      console.error(err);
+      setError("Error de conexión con el servidor");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
-      {/* Navbar */}
-      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
-        <h1 className="text-lg font-bold text-gray-900">Registro de Evento</h1>
-        <button
-          onClick={() => router.push("/login")}
-          className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-        >
-          Cerrar Sesión
-        </button>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-orange-600">
+      <nav className="absolute top-6 left-6 flex items-center space-x-2">
+        <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+        <h1 className="text-white font-semibold text-lg">AppName</h1>
       </nav>
 
-      {/* Formulario */}
-      <div className="flex justify-center items-center mt-10">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Evento</h2>
-          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+      {/* Formulario de Registro */}
+      <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
+        <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Cuenta Organizador</h2>
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="nombre_evento"
-              placeholder="Nombre del Evento"
-              className="w-full p-2 border rounded mb-2"
-              value={evento.nombre_evento}
-              onChange={handleChange}
-              required
-            />
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            placeholder="Nombre Organización"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
 
-            <input
-              type="date"
-              name="fecha"
-              className="w-full p-2 border rounded mb-2"
-              value={evento.fecha}
-              onChange={handleChange}
-              required
-            />
+        <input
+            type="text"
+            placeholder="RUT Organización"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
 
-            <textarea
-              name="descripcion"
-              placeholder="Descripción"
-              className="w-full p-2 border rounded mb-2"
-              value={evento.descripcion}
-              onChange={handleChange}
-              required
-            />
+          <input
+            type="email"
+            placeholder="Correo Electrónico"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-            <input
-              type="time"
-              name="hora_inicio"
-              className="w-full p-2 border rounded mb-2"
-              value={evento.hora_inicio}
-              onChange={handleChange}
-              required
-            />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
-            <input
-              type="time"
-              name="hora_cierre"
-              className="w-full p-2 border rounded mb-2"
-              value={evento.hora_cierre}
-              onChange={handleChange}
-              required
-            />
+          <input
+            type="password"
+            placeholder="Confirmar Contraseña"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+          />
 
-            <input
-              type="text"
-              name="ubicacion"
-              placeholder="Ubicación"
-              className="w-full p-2 border rounded mb-2"
-              value={evento.ubicacion}
-              onChange={handleChange}
-              required
-            />
+          <button
+            type="submit"
+            className="w-full mb-2 bg-green-600 text-white p-2 rounded hover:bg-green-700"
+          >
+            Crear Organizador
+          </button>
 
-            <input
-              type="number"
-              name="precio"
-              placeholder="Precio"
-              className="w-full p-2 border rounded mb-4"
-              value={evento.precio}
-              onChange={handleChange}
-              required
-            />
-
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
-            >
-              Guardar Evento
-            </button>
-          </form>
-        </div>
+          <button 
+          onClick={() => router.push("/login")} 
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Volver al Login
+        </button>
+        </form>
       </div>
     </div>
   );

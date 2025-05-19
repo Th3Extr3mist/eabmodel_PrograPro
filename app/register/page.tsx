@@ -49,16 +49,10 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
-      {/* Navbar */}
-      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
-        <h1 className="text-lg font-bold text-gray-900">Registro</h1>
-        <button 
-          onClick={() => router.push("/login")} 
-          className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-        >
-          Volver al Login
-        </button>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-orange-600">
+      <nav className="absolute top-6 left-6 flex items-center space-x-2">
+        <img src="/logo.png" alt="Logo" className="h-8 w-8" />
+        <h1 className="text-white font-semibold text-lg">AppName</h1>
       </nav>
 
       {/* Formulario de Registro */}
@@ -70,7 +64,7 @@ export default function RegisterPage() {
           <input
             type="text"
             placeholder="Nombre de Usuario"
-            className="w-full p-2 border rounded mb-2"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
@@ -79,7 +73,7 @@ export default function RegisterPage() {
           <input
             type="email"
             placeholder="Correo Electrónico"
-            className="w-full p-2 border rounded mb-2"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -88,7 +82,7 @@ export default function RegisterPage() {
           <input
             type="password"
             placeholder="Contraseña"
-            className="w-full p-2 border rounded mb-2"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -97,7 +91,7 @@ export default function RegisterPage() {
           <input
             type="password"
             placeholder="Confirmar Contraseña"
-            className="w-full p-2 border rounded mb-4"
+            className="w-full mb-2 p-3 border border-gray-300 rounded-md bg-gray-100 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -105,10 +99,24 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
+            className="w-full mb-2 bg-green-600 text-white p-2 rounded hover:bg-green-700"
           >
             Crear Usuario
           </button>
+
+          <button 
+          onClick={() => router.push("/organize")} 
+          className="w-full mb-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Soy Organizador
+        </button>
+
+          <button 
+          onClick={() => router.push("/login")} 
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Volver al Login
+        </button>
         </form>
       </div>
     </div>

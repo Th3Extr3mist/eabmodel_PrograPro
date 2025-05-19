@@ -39,7 +39,7 @@ export default function LoginPage() {
   };
   return (
     /*genera un diseño de color en gradiente (morado a naranja) de esquina izq-superior a esquina der-inferior*/
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-600 to-orange-400"> 
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-600 to-orange-600"> 
       <form 
         //onSubmit={handleSubmit} 
         className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm"
