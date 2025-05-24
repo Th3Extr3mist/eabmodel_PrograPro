@@ -13,7 +13,7 @@ export async function getAuthToken() {
   try {
     const decoded = jwt.verify(token, SECRET_KEY);
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
