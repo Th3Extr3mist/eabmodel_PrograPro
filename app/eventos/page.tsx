@@ -22,6 +22,7 @@ const useEventStore = create<EventStore>((set) => ({
     })),
 }));
 
+
 export default function EventList() {
   const { attending, toggleAttendance } = useEventStore();
   const router = useRouter();
@@ -57,16 +58,8 @@ export default function EventList() {
     }
   };
 
-  const eventMarkers: MarkerLatLng[] = [
-    { lat: 19.432608, lng: -99.133209 },
-    { lat: 19.45127,  lng: -99.15488  },
-    { lat: 19.42847,  lng: -99.12766  },
-    { lat: 19.40033,  lng: -99.16642  },
-  ];
-
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">
-      {/* Navbar */}
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-900">Eventos</h1>
         <button
@@ -93,8 +86,13 @@ export default function EventList() {
             height={200}
             className="rounded-lg object-cover"
           />
-          <h2 className="text-xl font-semibold mt-2 text-gray-800">{event.title}</h2>
+          <h2 className="text-xl font-semibold mt-2 text-gray-800">
+            {event.title}
+          </h2>
           <p className="text-gray-600">{event.description}</p>
+          <p className="text-sm text-blue-700 mt-1">
+            Ubicación: {event.lat}, {event.lng}
+          </p>
           <button
             onClick={() => toggleAttendance(event.id)}
             className={`mt-2 px-4 py-2 rounded font-medium transition-colors duration-200 ${
@@ -108,10 +106,9 @@ export default function EventList() {
         </motion.div>
       ))}
 
-      {/* Google Maps */}
       <div className="w-full max-w-4xl mt-10">
         <h2 className="text-2xl font-bold mb-4 text-gray-800">Ubicaciones de los Eventos</h2>
-        <GoogleMaps eventMarkers={eventMarkers} />
+        <GoogleMaps events={events} />
       </div>
     </div>
   );

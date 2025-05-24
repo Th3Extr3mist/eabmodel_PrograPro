@@ -1,47 +1,50 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
 
-export default function GoogleMaps() {
-	const mapRef = React.useRef<HTMLDivElement>(null);
+interface Event {
+  id: number;
+  title: string;
+  lat: number;
+  lng: number;
+}
 
-	useEffect(() => {
-		const initializeMap = async () => {
-			const loader = new Loader({
-				apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
-				version: 'quartely',
-			});
+export default function GoogleMaps({ events }: { events: Event[] }) {
+  const mapRef = useRef<HTMLDivElement>(null);
 
-			const { Map } = await loader.importLibrary('maps');
+  useEffect(() => {
+    const initializeMap = async () => {
+      const loader = new Loader({
+        apiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY as string,
+        version: 'quartely',
+      });
 
-			const locationInMap = {
-				lat: 39.60128890889341,
-				lng: -9.069839810859907,
-			};
+      const { Map } = await loader.importLibrary('maps');
+      const { Marker } = await loader.importLibrary('marker') as google.maps.MarkerLibrary;
 
-			// MARKER
-			const { Marker } = (await loader.importLibrary(
-				'marker'
-			)) as google.maps.MarkerLibrary;
+      const center = {
+        lat: events[0]?.lat || 0,
+        lng: events[0]?.lng || 0,
+      };
 
-			const options: google.maps.MapOptions = {
-				center: locationInMap,
-				zoom: 15,
-				mapId: 'NEXT_MAPS_TUTS',
-			};
+      const map = new Map(mapRef.current as HTMLDivElement, {
+        center,
+        zoom: 12,
+        mapId: 'NEXT_MAPS_TUTS',
+      });
 
-			const map = new Map(mapRef.current as HTMLDivElement, options);
+      events.forEach((event) => {
+        new Marker({
+          map,
+          position: { lat: event.lat, lng: event.lng },
+          title: event.title,
+        });
+      });
+    };
 
-			// add the marker in the map
-			const marker = new Marker({
-				map: map,
-				position: locationInMap,
-			});
-		};
+    initializeMap();
+  }, [events]);
 
-		initializeMap();
-	}, []);
-
-	return <div className="h-[600px]" ref={mapRef} />;
+  return <div className="h-[600px] w-full rounded-lg shadow" ref={mapRef} />;
 }
