@@ -209,7 +209,7 @@ export default function EventoForm() {
               <input
                 name="price"
                 type="text"
-                placeholder="0.00"
+                placeholder="0"
                 className="w-full pl-7 p-2 border rounded"
                 value={evento.price}
                 onChange={handleChange}
