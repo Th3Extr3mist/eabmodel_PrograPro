@@ -49,6 +49,7 @@ export default function LoginPage() {
         <span className="text-white font-semibold text-lg">AppName</span>
         </div>
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Iniciar Sesión</h2>
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
         
         <input
           type="email"
@@ -92,6 +93,9 @@ export default function LoginPage() {
           Registrate
         </button>
       </form>
+      <footer className="w-full text-center py-4 text-white text-sm bg-opacity-80 fixed bottom-0">
+         © {new Date().getFullYear()} AppName. Todos los derechos reservados. Creado por EABMODEL
+      </footer>
     </div>
   );
   
