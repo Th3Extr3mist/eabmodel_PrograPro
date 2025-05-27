@@ -29,6 +29,7 @@ export default function EventList() {
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -46,24 +47,28 @@ export default function EventList() {
     };
   }, [isSidebarOpen]);
   // Estado para eventos y carga desde API
-  const [events, setEvents] = useState<{
-    id: number;
-    title: string;
-    description: string;
-    image: string;
-  }[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
+  
+  const [user, setUser] = useState<{
+    nombre: string;
+    email: string;
+    biografia: string;
+    intereses: string[];
+  } | null>(null);
+  
   useEffect(() => {
-    fetch("/api/events")
+    fetch("/api/user")
       .then((res) => {
-        if (!res.ok) throw new Error("No se pudieron cargar los eventos");
+        if (!res.ok) throw new Error("No autenticado");
         return res.json();
       })
-      .then((data) => setEvents(data))
+      .then((data) => {
+        setUser(data);
+        setError(null); // Borra error si carga bien
+      })
       .catch((err) => {
         console.error(err);
-        setError("Error al cargar eventos");
+        setError("Error al cargar usuario");
+        setUser(null); // Esto va *solo* en el catch
       });
   }, []);
 
@@ -79,13 +84,7 @@ export default function EventList() {
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
-        <h1 className="text-lg font-bold text-gray-900">Eventos</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-        >
-          Cerrar Sesión
-        </button>
+        <h1 className="text-lg font-bold text-gray-900">Perfil</h1>
       </nav>
      {/* Botón para abrir menú */}
       <button
@@ -120,46 +119,39 @@ export default function EventList() {
           </button>
         </nav>
       </div>
-      <h1 className="text-4xl font-bold mt-6 mb-6 text-gray-800">Eventos</h1>
+      <h1 className="text-4xl font-bold mt-6 mb-6 text-gray-800"></h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {events.map((event) => (
-        <motion.div
-          key={event.id}
-          className="w-full max-w-md bg-white p-4 rounded-lg shadow-md mb-4"
-          whileHover={{ scale: 1.02 }}
-        >
-          <Image
-            src={event.image}
-            alt={event.title}
-            width={400}
-            height={200}
-            className="rounded-lg object-cover"
-          />
-          <h2 className="text-xl font-semibold mt-2 text-gray-800">
-            {event.title}
-          </h2>
-          <p className="text-gray-600">{event.description}</p>
-          <p className="text-sm text-blue-700 mt-1">
-            Ubicación: {event.lat}, {event.lng}
-          </p>
-          <button
-            onClick={() => toggleAttendance(event.id)}
-            className={`mt-2 px-4 py-2 rounded font-medium transition-colors duration-200 ${
-              attending[event.id]
-                ? "bg-green-600 text-white hover:bg-green-700"
-                : "bg-gray-300 text-gray-900 hover:bg-gray-400"
-            }`}
-          >
-            {attending[event.id] ? "Asistiendo ✅" : "Asistir"}
-          </button>
-        </motion.div>
-      ))}
+      <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="flex items-center space-x-4">
+            <Image
+            src="/images/avatar-placeholder.png" // Usa una imagen por defecto o dinámica si ya tienes auth
+            alt="Foto de perfil"
+            width={80}
+            height={80}
+            className="rounded-full object-cover"
+            />
+            <div>
+            <h2 className="text-2xl font-semibold text-gray-800">{user?.nombre ?? "Cargando..."}</h2>
+            <p className="text-gray-600">{user?.email ?? ""}</p>
+            </div>
+        </div>
+        <div className="mt-6">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">Biografía</h3>
+            <p className="text-gray-600">
+                {user?.biografia ?? "Sin biografía disponible"}
+            </p>
+            </div>
 
-      <div className="w-full max-w-4xl mt-10">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Ubicaciones de los Eventos</h2>
-        <GoogleMaps events={events} />
-      </div>
+            <div className="mt-4">
+            <h3 className="text-lg font-medium text-gray-700 mb-2">Intereses</h3>
+            <ul className="list-disc list-inside text-gray-600">
+                {(user?.intereses ?? []).map((interes, idx) => (
+                <li key={idx}>{interes}</li>
+                ))}
+            </ul>
+            </div>
+        </div>
     </div>
   );
 }
