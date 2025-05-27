@@ -38,6 +38,9 @@ model eventinfo {
   location_id   Int
   price         Decimal       @db.Decimal(10, 2)
   availability  Int?
+  lat           Float     @default(0.0)
+  lng           Float     @default(0.0)
+  image         String?
   eventlocation eventlocation @relation(fields: [location_id], references: [location_id], onDelete: SetNull, onUpdate: NoAction)
   organizer     organizer     @relation(fields: [organizer_id], references: [organizer_id], onDelete: Cascade, onUpdate: NoAction)
   reservation   reservation[]
