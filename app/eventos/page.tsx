@@ -3,8 +3,9 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { create } from "zustand";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import GoogleMaps, { MarkerLatLng } from "../components/GoogleMaps";
+
 
 interface EventStore {
   attending: Record<number, boolean>;
@@ -26,7 +27,23 @@ const useEventStore = create<EventStore>((set) => ({
 export default function EventList() {
   const { attending, toggleAttendance } = useEventStore();
   const router = useRouter();
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsSidebarOpen(false);
+      }
+    }
+
+    if (isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarOpen]);
   // Estado para eventos y carga desde API
   const [events, setEvents] = useState<{
     id: number;
@@ -69,7 +86,39 @@ export default function EventList() {
           Cerrar Sesión
         </button>
       </nav>
+ {/* Botón para abrir menú */}
+ <button
+        onClick={() => setIsSidebarOpen(true)}
+        className="fixed top-4 right-4 z-50 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700"
+      >
+        ☰ Menú
+      </button>
 
+      {/* Sidebar */}
+      <div
+        ref={sidebarRef} // ✅ esto es esencial
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-40 ${
+          isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <button
+          onClick={() => setIsSidebarOpen(false)}
+          className="absolute top-4 right-4 text-gray-600 text-2xl"
+        >
+          ×
+        </button>
+        <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
+          <button onClick={() => { router.push("/perfil"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
+          <button onClick={() => { router.push("/eventos-guardados"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
+          <button onClick={() => { router.push("/mis-viajes"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Viajes</button>
+          <button
+            onClick={() => { handleLogout(); setIsSidebarOpen(false); }}
+            className="mt-4 text-red-600 hover:text-red-800 font-semibold"
+          >
+            Cerrar Sesión
+          </button>
+        </nav>
+      </div>
       <h1 className="text-4xl font-bold mt-6 mb-6 text-gray-800">Eventos</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
