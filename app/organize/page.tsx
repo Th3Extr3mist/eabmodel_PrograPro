@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 type Location = {
   location_id: number;
@@ -13,99 +13,96 @@ type Organizer = {
   organizer_name: string;
 };
 
-type EventoFormData = {
-  event_name: string;
-  event_date: string;
-  description: string;
-  start_time: string;
-  end_time: string;
-  organizer_id: number;
-  location_id: number;
-  price: string;
-  availability: string;
-  lat: number;
-  lng: number;
-};
-
 export default function EventoForm() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
-  const [evento, setEvento] = useState<EventoFormData>({
-    event_name: "",
-    event_date: "",
-    description: "",
-    start_time: "",
-    end_time: "",
-    organizer_id: 0,
-    location_id: 0,
-    price: "",
-    availability: "",
-    lat: "",  
-    lng: "",  
+  const [evento, setEvento] = useState<{
+    event_name: string;
+    event_date: string;
+    description: string;
+    start_time: string;
+    end_time: string;
+    organizer_id: number;
+    location_id: number;
+    price: string;
+    availability: string;
+    lat: number;
+    lng: number;
+  }>({
+    event_name: '',
+    event_date: '',
+    description: '',
+    start_time: '',
+    end_time: '',
+    organizer_id: '',
+    location_id: '',
+    price: '',
+    availability: '',
+    lat: "",
+    lng: "",
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/locations")
+    fetch('/api/locations')
       .then((res) => res.json())
       .then((data: Location[]) => setLocations(data))
-      .catch(() => setError("Error al cargar ubicaciones"));
+      .catch(() => setError('Error al cargar ubicaciones'));
   }, []);
 
   useEffect(() => {
-    fetch("/api/organizers")
+    fetch('/api/organizers')
       .then((res) => res.json())
       .then((data: Organizer[]) => setOrganizers(data))
-      .catch(() => setError("Error al cargar organizadores"));
+      .catch(() => setError('Error al cargar organizadores'));
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setEvento((prev) => ({
       ...prev,
       [name]:
-        name === "price" || name === "availability"
-          ? value
-          : name === "organizer_id" || name === "location_id"
-          ? parseInt(value) || 0
-          : name === "lat" || name === "lng"
-          ? parseFloat(value) || 0  // Convertir lat/lng a número
+        name === 'organizer_id' || name === 'location_id'
+          ? parseInt(value, 10) || 0
+          : name === 'lat' || name === 'lng'
+          ? parseFloat(value) || 0
           : value,
     }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageFile(e.target.files?.[0] || null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const payload = {
-      ...evento,
-      price: parseFloat(evento.price),
-      availability: parseInt(evento.availability, 10),
-    };
-
     try {
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const formData = new FormData();
+      for (const key in evento) {
+        formData.append(key, String((evento as any)[key]));
+      }
+      if (imageFile) formData.append('image', imageFile);
+
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        body: formData, // multipart/form-data
       });
 
       if (!res.ok) throw new Error(await res.text());
 
-      alert("✅ Evento guardado correctamente!");
-      router.refresh();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error("Error al guardar evento:", err.message);
-        setError(err.message);
-      } else {
-        console.error("Error desconocido:", err);
-        setError("Error desconocido al guardar el evento");
-      }
+      alert('✅ Evento guardado correctamente!');
+      router.push('/eventos');
+    } catch (err: any) {
+      console.error('Error al guardar evento:', err);
+      setError(err.message || 'Error desconocido al guardar el evento');
     }
   };
 
@@ -114,7 +111,7 @@ export default function EventoForm() {
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
         <h1 className="text-lg font-bold">Registro de Evento</h1>
         <button
-          onClick={() => router.push("/login")}
+          onClick={() => router.push('/login')}
           className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
         >
           Cerrar Sesión
@@ -136,7 +133,6 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
             <input
               name="event_date"
               type="date"
@@ -145,7 +141,6 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
             <textarea
               name="description"
               placeholder="Descripción"
@@ -154,7 +149,6 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
             <input
               name="start_time"
               type="time"
@@ -163,7 +157,6 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
             <input
               name="end_time"
               type="time"
@@ -172,7 +165,6 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
             <select
               name="organizer_id"
               className="w-full p-2 border rounded"
@@ -187,7 +179,6 @@ export default function EventoForm() {
                 </option>
               ))}
             </select>
-
             <select
               name="location_id"
               className="w-full p-2 border rounded"
@@ -202,7 +193,6 @@ export default function EventoForm() {
                 </option>
               ))}
             </select>
-
             <label className="block relative">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
                 $
@@ -218,18 +208,16 @@ export default function EventoForm() {
                 required
               />
             </label>
-
             <input
               name="availability"
               type="text"
-              placeholder="disponibilidad"
+              placeholder="Disponibilidad"
               className="w-full p-2 border rounded"
               value={evento.availability}
               onChange={handleChange}
               pattern="\d+"
               required
             />
-
             <input
               name="lat"
               type="number"
@@ -240,7 +228,6 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
             <input
               name="lng"
               type="number"
@@ -251,7 +238,12 @@ export default function EventoForm() {
               onChange={handleChange}
               required
             />
-
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full p-2 border rounded"
+            />
             <button
               type="submit"
               className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"

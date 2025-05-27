@@ -19,7 +19,8 @@ export const EventService = {
         price:        dto.price,
         availability: dto.availability ?? 0,
         lat: dto.lat,
-        lng: dto.lng
+        lng: dto.lng,
+        image:dto.image
       }
     });
   },
@@ -56,7 +57,8 @@ export const EventService = {
         ...(dto.price          !== undefined && { price:        dto.price         }),
         ...(dto.availability   !== undefined && { availability: dto.availability  }),
         ...(dto.lat && {lat: dto.lat}),
-        ...(dto.lng && {lnt: dto.lng})
+        ...(dto.lng && {lnt: dto.lng}),
+        ...(dto.image && {lnt: dto.image})
       }
     });
   },

@@ -80,8 +80,8 @@ export default function EventList() {
             <Image
               src={event.image}
               alt={event.title || "Imagen del evento"}
-              width={400}
-              height={200}
+              width={200}
+              height={100}
               className="rounded-lg object-cover"
             />
           ) : null}

@@ -43,6 +43,10 @@ export class CreateEventDto {
 
   @IsNumber()
   lng:number;
+
+  @IsOptional()
+  @IsString()
+  image?:string;
 }
 
 export class UpdateEventDto {
@@ -91,6 +95,10 @@ export class UpdateEventDto {
   @IsOptional()
   @IsNumber()
   lng?:number;
+
+  @IsOptional()
+  @IsString()
+  image?:string;
 }
 
 export class EventResponseDto {
@@ -128,5 +136,8 @@ export class EventResponseDto {
   lat?:number;
 
   @Expose()
-  lng?:number
+  lng?:number;
+
+  @Expose()
+  image?:string
 }
