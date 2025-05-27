@@ -37,6 +37,12 @@ export class CreateEventDto {
   @IsInt()
   @Min(0)
   availability?: number;
+
+  @IsNumber()
+  lat:number;
+
+  @IsNumber()
+  lng:number;
 }
 
 export class UpdateEventDto {
@@ -77,6 +83,14 @@ export class UpdateEventDto {
   @IsInt()
   @Min(0)
   availability?: number;
+
+  @IsOptional()
+  @IsNumber()
+  lat?:number;
+
+  @IsOptional()
+  @IsNumber()
+  lng?:number;
 }
 
 export class EventResponseDto {
@@ -109,4 +123,10 @@ export class EventResponseDto {
 
   @Expose()
   availability?: number;
+
+  @Expose()
+  lat?:number;
+
+  @Expose()
+  lng?:number
 }

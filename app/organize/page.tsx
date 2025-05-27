@@ -23,6 +23,8 @@ type EventoFormData = {
   location_id: number;
   price: string;
   availability: string;
+  lat: number;
+  lng: number;
 };
 
 export default function EventoForm() {
@@ -38,6 +40,8 @@ export default function EventoForm() {
     location_id: 0,
     price: "",
     availability: "",
+    lat: "",  
+    lng: "",  
   });
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -67,6 +71,8 @@ export default function EventoForm() {
           ? value
           : name === "organizer_id" || name === "location_id"
           ? parseInt(value) || 0
+          : name === "lat" || name === "lng"
+          ? parseFloat(value) || 0  // Convertir lat/lng a número
           : value,
     }));
   };
@@ -221,6 +227,28 @@ export default function EventoForm() {
               value={evento.availability}
               onChange={handleChange}
               pattern="\d+"
+              required
+            />
+
+            <input
+              name="lat"
+              type="number"
+              step="any"
+              placeholder="Latitud"
+              className="w-full p-2 border rounded"
+              value={evento.lat}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              name="lng"
+              type="number"
+              step="any"
+              placeholder="Longitud"
+              className="w-full p-2 border rounded"
+              value={evento.lng}
+              onChange={handleChange}
               required
             />
 

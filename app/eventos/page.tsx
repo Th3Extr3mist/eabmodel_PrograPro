@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { create } from "zustand";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import GoogleMaps, { MarkerLatLng } from "../components/GoogleMaps";
+import GoogleMaps, { MapEvent } from "../components/GoogleMaps";
 
 interface EventStore {
   attending: Record<number, boolean>;
@@ -22,18 +22,13 @@ const useEventStore = create<EventStore>((set) => ({
     })),
 }));
 
-
 export default function EventList() {
   const { attending, toggleAttendance } = useEventStore();
   const router = useRouter();
 
-  // Estado para eventos y carga desde API
-  const [events, setEvents] = useState<{
-    id: number;
-    title: string;
-    description: string;
-    image: string;
-  }[]>([]);
+  const [events, setEvents] = useState<
+    (MapEvent & { description: string; image?: string })[]
+  >([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,6 +43,8 @@ export default function EventList() {
         setError("Error al cargar eventos");
       });
   }, []);
+
+  const mapEvents = events.filter((e) => e.lat && e.lng);
 
   const handleLogout = async () => {
     try {
@@ -79,20 +76,25 @@ export default function EventList() {
           className="w-full max-w-md bg-white p-4 rounded-lg shadow-md mb-4"
           whileHover={{ scale: 1.02 }}
         >
-          <Image
-            src={event.image}
-            alt={event.title}
-            width={400}
-            height={200}
-            className="rounded-lg object-cover"
-          />
+          {event.image ? (
+            <Image
+              src={event.image}
+              alt={event.title || "Imagen del evento"}
+              width={400}
+              height={200}
+              className="rounded-lg object-cover"
+            />
+          ) : null}
+
           <h2 className="text-xl font-semibold mt-2 text-gray-800">
             {event.title}
           </h2>
           <p className="text-gray-600">{event.description}</p>
-          <p className="text-sm text-blue-700 mt-1">
-            Ubicación: {event.lat}, {event.lng}
-          </p>
+          {event.lat && event.lng && (
+            <p className="text-sm text-blue-700 mt-1">
+              Ubicación: {event.lat}, {event.lng}
+            </p>
+          )}
           <button
             onClick={() => toggleAttendance(event.id)}
             className={`mt-2 px-4 py-2 rounded font-medium transition-colors duration-200 ${
@@ -106,10 +108,12 @@ export default function EventList() {
         </motion.div>
       ))}
 
-      <div className="w-full max-w-4xl mt-10">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Ubicaciones de los Eventos</h2>
-        <GoogleMaps events={events} />
-      </div>
+      {mapEvents.length > 0 && (
+        <div className="w-full max-w-4xl mt-10">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">Ubicaciones de los Eventos</h2>
+          <GoogleMaps apiKey={process.env.NEXT_PUBLIC_MAPS_API_KEY!} events={mapEvents} />
+        </div>
+      )}
     </div>
   );
 }

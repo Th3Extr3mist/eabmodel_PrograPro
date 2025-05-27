@@ -17,7 +17,9 @@ export const EventService = {
         organizer_id: dto.organizer_id,
         location_id:  dto.location_id,
         price:        dto.price,
-        availability: dto.availability ?? 0
+        availability: dto.availability ?? 0,
+        lat: dto.lat,
+        lng: dto.lng
       }
     });
   },
@@ -52,7 +54,9 @@ export const EventService = {
         ...(dto.organizer_id   && { organizer_id: dto.organizer_id   }),
         ...(dto.location_id    && { location_id:  dto.location_id    }),
         ...(dto.price          !== undefined && { price:        dto.price         }),
-        ...(dto.availability   !== undefined && { availability: dto.availability  })
+        ...(dto.availability   !== undefined && { availability: dto.availability  }),
+        ...(dto.lat && {lat: dto.lat}),
+        ...(dto.lng && {lnt: dto.lng})
       }
     });
   },
