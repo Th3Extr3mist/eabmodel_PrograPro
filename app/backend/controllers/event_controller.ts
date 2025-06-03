@@ -1,3 +1,5 @@
+// backend/controllers/event_controller.ts
+
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { validate } from 'class-validator';
@@ -15,22 +17,27 @@ export class EventController {
     try {
       const formData = await req.formData();
       const dtoRaw: Record<string, any> = {};
-      // Define fields por tipo
+
+      // Campos de tipo string
       const strFields = ['event_name', 'event_date', 'description', 'start_time', 'end_time'];
+      // Campos de tipo entero
       const intFields = ['organizer_id', 'location_id', 'availability'];
+      // Campos de tipo flotante
       const floatFields = ['price', 'lat', 'lng'];
 
-      // Parse texto
+      // Parseo de campos string
       for (const field of strFields) {
         const val = formData.get(field);
         dtoRaw[field] = typeof val === 'string' ? val : '';
       }
-      // Parse enteros
+
+      // Parseo de campos enteros
       for (const field of intFields) {
         const val = formData.get(field);
         dtoRaw[field] = val !== null ? parseInt(val.toString(), 10) : null;
       }
-      // Parse flotantes
+
+      // Parseo de campos flotantes
       for (const field of floatFields) {
         const val = formData.get(field);
         dtoRaw[field] = val !== null ? parseFloat(val.toString()) : null;
@@ -49,14 +56,18 @@ export class EventController {
         dtoRaw.image = `/uploads/${filename}`;
       }
 
-      // Validación DTO
+      // Validación del DTO
       const dto = plainToInstance(CreateEventDto, dtoRaw);
       const errors = await validate(dto);
       if (errors.length) {
-        const msgs = errors.map(e => ({ field: e.property, message: Object.values(e.constraints || {}).join(', ') }));
+        const msgs = errors.map(e => ({
+          field: e.property,
+          message: Object.values(e.constraints || {}).join(', ')
+        }));
         return NextResponse.json({ message: 'Validación fallida', errors: msgs }, { status: 400 });
       }
 
+      // Llamada al servicio para crear el evento
       const ev = await EventService.create(dto);
       return NextResponse.json(ev, { status: 201 });
     } catch (error: any) {
@@ -87,11 +98,13 @@ export class EventController {
 
   /** GET /api/events/:id */
   static async getById(idStr: string) {
+    console.log('[DEBUG] getById recibido con idStr =', idStr);
     if (!isIntString(idStr)) {
       return NextResponse.json({ message: 'ID inválido' }, { status: 400 });
     }
     try {
-      const ev = await EventService.getById(+idStr);
+      const idNum = +idStr; // convierte string a número
+      const ev = await EventService.getById(idNum);
       if (!ev) {
         return NextResponse.json({ message: 'Evento no encontrado' }, { status: 404 });
       }
@@ -112,10 +125,14 @@ export class EventController {
       const dto = plainToInstance(UpdateEventDto, body);
       const errors = await validate(dto);
       if (errors.length) {
-        const msgs = errors.map(e => ({ field: e.property, message: Object.values(e.constraints || {}).join(', ') }));
+        const msgs = errors.map(e => ({
+          field: e.property,
+          message: Object.values(e.constraints || {}).join(', ')
+        }));
         return NextResponse.json({ message: 'Validación fallida', errors: msgs }, { status: 400 });
       }
-      const ev = await EventService.update(+idStr, dto);
+      const idNum = +idStr;
+      const ev = await EventService.update(idNum, dto);
       return NextResponse.json(ev);
     } catch (error) {
       console.error('[EVENT_CONTROLLER] Update error:', error);
@@ -129,7 +146,8 @@ export class EventController {
       return NextResponse.json({ message: 'ID inválido' }, { status: 400 });
     }
     try {
-      await EventService.delete(+idStr);
+      const idNum = +idStr;
+      await EventService.delete(idNum);
       return new NextResponse(null, { status: 204 });
     } catch (error) {
       console.error('[EVENT_CONTROLLER] Delete error:', error);
