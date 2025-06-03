@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { EventController } from '../../../backend/controllers/event_controller';
+// app/api/events/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { EventController } from "../../../backend/controllers/event_controller";
 
 export async function GET(
   req: NextRequest,
