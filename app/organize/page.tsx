@@ -2,6 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+
+// Carga dinámica del MapPicker para evitar errores de SSR
+const MapPicker = dynamic(() => import('../components/MapPicker'), { ssr: false });
 
 type Location = {
   location_id: number;
@@ -16,30 +20,18 @@ type Organizer = {
 export default function EventoForm() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
-  const [evento, setEvento] = useState<{
-    event_name: string;
-    event_date: string;
-    description: string;
-    start_time: string;
-    end_time: string;
-    organizer_id: number;
-    location_id: number;
-    price: string;
-    availability: string;
-    lat: number;
-    lng: number;
-  }>({
+  const [evento, setEvento] = useState({
     event_name: '',
     event_date: '',
     description: '',
     start_time: '',
     end_time: '',
-    organizer_id: '',
-    location_id: '',
+    organizer_id: 0,
+    location_id: 0,
     price: '',
     availability: '',
-    lat: "",
-    lng: "",
+    lat: 0,
+    lng: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -48,14 +40,12 @@ export default function EventoForm() {
   useEffect(() => {
     fetch('/api/locations')
       .then((res) => res.json())
-      .then((data: Location[]) => setLocations(data))
+      .then((data) => setLocations(data))
       .catch(() => setError('Error al cargar ubicaciones'));
-  }, []);
 
-  useEffect(() => {
     fetch('/api/organizers')
       .then((res) => res.json())
-      .then((data: Organizer[]) => setOrganizers(data))
+      .then((data) => setOrganizers(data))
       .catch(() => setError('Error al cargar organizadores'));
   }, []);
 
@@ -70,10 +60,12 @@ export default function EventoForm() {
       [name]:
         name === 'organizer_id' || name === 'location_id'
           ? parseInt(value, 10) || 0
-          : name === 'lat' || name === 'lng'
-          ? parseFloat(value) || 0
           : value,
     }));
+  };
+
+  const handleMapChange = (lat: number, lng: number) => {
+    setEvento((prev) => ({ ...prev, lat, lng }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,7 +85,7 @@ export default function EventoForm() {
 
       const res = await fetch('/api/events', {
         method: 'POST',
-        body: formData, // multipart/form-data
+        body: formData,
       });
 
       if (!res.ok) throw new Error(await res.text());
@@ -119,7 +111,7 @@ export default function EventoForm() {
       </nav>
 
       <div className="flex justify-center items-center mt-10">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
           <h2 className="text-2xl font-bold mb-4 text-center">Crear Evento</h2>
           {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
@@ -218,26 +210,18 @@ export default function EventoForm() {
               pattern="\d+"
               required
             />
-            <input
-              name="lat"
-              type="number"
-              step="any"
-              placeholder="Latitud"
-              className="w-full p-2 border rounded"
-              value={evento.lat}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="lng"
-              type="number"
-              step="any"
-              placeholder="Longitud"
-              className="w-full p-2 border rounded"
-              value={evento.lng}
-              onChange={handleChange}
-              required
-            />
+
+            {/* Map Picker */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Selecciona la ubicación del evento:
+              </label>
+              <MapPicker lat={evento.lat} lng={evento.lng} onChange={handleMapChange} />
+              <p className="text-xs text-gray-600 mt-1">
+                Latitud: {evento.lat}, Longitud: {evento.lng}
+              </p>
+            </div>
+
             <input
               type="file"
               accept="image/*"
