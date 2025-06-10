@@ -123,7 +123,7 @@ export default function EventList() {
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 rounded-lg shadow-lg flex justify-between items-center">
-        <h1 className="text-lg font-bold text-gray-900">Eventos</h1>
+        <h1 className="text-lg font-bold text-gray-900">Mis Planes</h1>
      {/* Botón para abrir menú */}
      {!isSidebarOpen && (
         <button
@@ -154,15 +154,12 @@ export default function EventList() {
         </nav>
       </div>
       </nav>
-      <h1 className="text-4xl font-bold mt-6 mb-6 text-gray-800">Eventos</h1>
+      <nav className="self-start bg-white border-b border-gray-300 py-3 px-10  rounded-lg shadow-lg ">
+      <h1 className="w-full text-xl font-bold mt-6 mb-6 text-gray-800">Crear Panorama</h1>
+      </nav>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       
-      <div className="w-full px-6 py-4">
-        {renderSection("Eventos Recomendados", eventsRecomen)}
-        {renderSection("Eventos Patrocinados", eventsPay)}
-        {renderSection("Eventos Generales", eventsGeneral)}
-        {renderSection("Eventos Próximos", eventsclosecall)}
-      </div>
+      
 
       {/*{events.map((event) => (
         <motion.div
