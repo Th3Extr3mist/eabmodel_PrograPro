@@ -1,257 +1,232 @@
+// pages/eventos/nuevo.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { TextField, Button } from '@mui/material';
+import { parse, format } from 'date-fns';
+import type { LatLng } from '../components/MapPicker';
 
-type Location = {
-  location_id: number;
-  address: string;
-};
+const MapPicker = dynamic(() => import('../components/MapPicker'), { ssr: false });
+const MobileTimePicker = dynamic<React.ComponentType<any>>(
+  () =>
+    import('@mui/x-date-pickers/MobileTimePicker').then(
+      (mod) => mod.MobileTimePicker ?? (mod as any).default
+    ),
+  { ssr: false }
+);
 
-type Organizer = {
-  organizer_id: number;
-  organizer_name: string;
-};
+type Location = { location_id: number; address: string };
+type Organizer = { organizer_id: number; organizer_name: string };
 
 export default function EventoForm() {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
-  const [evento, setEvento] = useState<{
-    event_name: string;
-    event_date: string;
-    description: string;
-    start_time: string;
-    end_time: string;
-    organizer_id: number;
-    location_id: number;
-    price: string;
-    availability: string;
-    lat: number;
-    lng: number;
-  }>({
+  const [evento, setEvento] = useState({
     event_name: '',
     event_date: '',
     description: '',
-    start_time: '',
-    end_time: '',
-    organizer_id: '',
-    location_id: '',
+    start_time: '12:00',
+    end_time: '13:00',
+    organizer_id: 0,
+    location_id: 0,
     price: '',
     availability: '',
-    lat: "",
-    lng: "",
+    lat: 0,
+    lng: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     fetch('/api/locations')
-      .then((res) => res.json())
-      .then((data: Location[]) => setLocations(data))
-      .catch(() => setError('Error al cargar ubicaciones'));
-  }, []);
-
-  useEffect(() => {
+      .then(r => r.json())
+      .then(setLocations);
     fetch('/api/organizers')
-      .then((res) => res.json())
-      .then((data: Organizer[]) => setOrganizers(data))
-      .catch(() => setError('Error al cargar organizadores'));
+      .then(r => r.json())
+      .then(setOrganizers);
   }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
+  const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
-    setEvento((prev) => ({
+    setEvento(prev => ({
       ...prev,
-      [name]:
-        name === 'organizer_id' || name === 'location_id'
-          ? parseInt(value, 10) || 0
-          : name === 'lat' || name === 'lng'
-          ? parseFloat(value) || 0
-          : value,
+      [name]: ['organizer_id', 'location_id'].includes(name)
+        ? parseInt(value, 10) || 0
+        : value,
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setImageFile(e.target.files?.[0] || null);
+  const stringToDate = (time: string) =>
+    parse(time, 'HH:mm', new Date());
+
+  const dateToString = (date: Date) =>
+    format(date, 'HH:mm');
+
+  const handleTime = (field: 'start_time' | 'end_time') => (newDate: Date | null) => {
+    if (newDate) {
+      const timeStr = dateToString(newDate);
+      setEvento(prev => ({ ...prev, [field]: timeStr }));
+    }
+  };
+
+  const handleMap = (lat: number, lng: number) => {
+    setEvento(prev => ({ ...prev, lat, lng }));
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageFile(e.target.files?.[0] ?? null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
-    try {
-      const formData = new FormData();
-      for (const key in evento) {
-        formData.append(key, String((evento as any)[key]));
-      }
-      if (imageFile) formData.append('image', imageFile);
+    if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(evento.start_time) ||
+        !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(evento.end_time)) {
+      setError('Horas inválidas');
+      return;
+    }
+    if (isNaN(evento.lat) || isNaN(evento.lng)) {
+      setError('Selecciona ubicación');
+      return;
+    }
 
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        body: formData, // multipart/form-data
-      });
+    const form = new FormData();
+    Object.entries(evento).forEach(([k, v]) => form.append(k, String(v)));
+    if (imageFile) form.append('image', imageFile);
 
-      if (!res.ok) throw new Error(await res.text());
-
-      alert('✅ Evento guardado correctamente!');
-      router.push('/eventos');
-    } catch (err: any) {
-      console.error('Error al guardar evento:', err);
-      setError(err.message || 'Error desconocido al guardar el evento');
+    const res = await fetch('/api/events', { method: 'POST', body: form });
+    if (!res.ok) {
+      setError(await res.text());
+    } else {
+      setSuccess('Evento creado correctamente');
+      setTimeout(() => router.push('/eventos'), 2000);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
-      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
-        <h1 className="text-lg font-bold">Registro de Evento</h1>
-        <button
-          onClick={() => router.push('/login')}
-          className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
-        >
-          Cerrar Sesión
-        </button>
-      </nav>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="bg-white w-full max-w-lg p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center">Crear Evento</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {success && <p className="text-green-600 mb-4">{success}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            name="event_name"
+            placeholder="Nombre del Evento"
+            className="w-full p-2 border rounded"
+            value={evento.event_name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="event_date"
+            type="date"
+            className="w-full p-2 border rounded"
+            value={evento.event_date}
+            onChange={handleChange}
+            required
+          />
+          <textarea
+            name="description"
+            placeholder="Descripción"
+            className="w-full p-2 border rounded"
+            value={evento.description}
+            onChange={handleChange}
+            required
+          />
 
-      <div className="flex justify-center items-center mt-10">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          <h2 className="text-2xl font-bold mb-4 text-center">Crear Evento</h2>
-          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <input
-              name="event_name"
-              type="text"
-              placeholder="Nombre del Evento"
-              className="w-full p-2 border rounded"
-              value={evento.event_name}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="event_date"
-              type="date"
-              className="w-full p-2 border rounded"
-              value={evento.event_date}
-              onChange={handleChange}
-              required
-            />
-            <textarea
-              name="description"
-              placeholder="Descripción"
-              className="w-full p-2 border rounded"
-              value={evento.description}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="start_time"
-              type="time"
-              className="w-full p-2 border rounded"
-              value={evento.start_time}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="end_time"
-              type="time"
-              className="w-full p-2 border rounded"
-              value={evento.end_time}
-              onChange={handleChange}
-              required
-            />
-            <select
-              name="organizer_id"
-              className="w-full p-2 border rounded"
-              value={evento.organizer_id}
-              onChange={handleChange}
-              required
-            >
-              <option value={0}>-- Elige un organizador --</option>
-              {organizers.map((org) => (
-                <option key={org.organizer_id} value={org.organizer_id}>
-                  {org.organizer_name}
-                </option>
-              ))}
-            </select>
-            <select
-              name="location_id"
-              className="w-full p-2 border rounded"
-              value={evento.location_id}
-              onChange={handleChange}
-              required
-            >
-              <option value={0}>-- Elige una ubicación --</option>
-              {locations.map((loc) => (
-                <option key={loc.location_id} value={loc.location_id}>
-                  {loc.address}
-                </option>
-              ))}
-            </select>
-            <label className="block relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
-                $
-              </span>
-              <input
-                name="price"
-                type="text"
-                placeholder="0"
-                className="w-full pl-7 p-2 border rounded"
-                value={evento.price}
-                onChange={handleChange}
-                pattern="^\d+(\.\d{1,2})?$"
-                required
+          {mounted && (
+            <div className="flex space-x-4">
+              <MobileTimePicker
+                label="Hora inicio"
+                value={stringToDate(evento.start_time)}
+                onChange={handleTime('start_time')}
+                renderInput={params => <TextField {...params} fullWidth />}
               />
-            </label>
-            <input
-              name="availability"
-              type="text"
-              placeholder="Disponibilidad"
-              className="w-full p-2 border rounded"
-              value={evento.availability}
-              onChange={handleChange}
-              pattern="\d+"
-              required
-            />
-            <input
-              name="lat"
-              type="number"
-              step="any"
-              placeholder="Latitud"
-              className="w-full p-2 border rounded"
-              value={evento.lat}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="lng"
-              type="number"
-              step="any"
-              placeholder="Longitud"
-              className="w-full p-2 border rounded"
-              value={evento.lng}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="w-full p-2 border rounded"
-            />
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
-            >
-              Guardar Evento
-            </button>
-          </form>
-        </div>
+              <MobileTimePicker
+                label="Hora término"
+                value={stringToDate(evento.end_time)}
+                onChange={handleTime('end_time')}
+                renderInput={params => <TextField {...params} fullWidth />}
+              />
+            </div>
+          )}
+
+          <select
+            name="organizer_id"
+            className="w-full p-2 border rounded"
+            value={evento.organizer_id}
+            onChange={handleChange}
+            required
+          >
+            <option value={0}>-- Organizador --</option>
+            {organizers.map(o => (
+              <option key={o.organizer_id} value={o.organizer_id}>
+                {o.organizer_name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            name="location_id"
+            className="w-full p-2 border rounded"
+            value={evento.location_id}
+            onChange={handleChange}
+            required
+          >
+            <option value={0}>-- Ubicación --</option>
+            {locations.map(l => (
+              <option key={l.location_id} value={l.location_id}>
+                {l.address}
+              </option>
+            ))}
+          </select>
+
+          <input
+            name="price"
+            placeholder="Precio"
+            className="w-full p-2 border rounded"
+            value={evento.price}
+            onChange={handleChange}
+            required
+          />
+
+          <input
+            name="availability"
+            type="number"
+            placeholder="Disponibilidad"
+            className="w-full p-2 border rounded"
+            value={evento.availability}
+            onChange={handleChange}
+            required
+          />
+
+          <MapPicker lat={evento.lat} lng={evento.lng} onChange={handleMap} />
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFile}
+            className="w-full p-2 border rounded"
+          />
+
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ backgroundColor: '#16A34A' }}
+          >
+            Guardar Evento
+          </Button>
+        </form>
       </div>
     </div>
   );
