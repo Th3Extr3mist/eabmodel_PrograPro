@@ -11,8 +11,8 @@ interface Props {
 
 export default function MapPicker({ lat, lng, onChange }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
-  const mapInstance = useRef<google.maps.Map>();
-  const markerRef = useRef<google.maps.Marker>();
+  const mapInstance = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
 
   useEffect(() => {
     const apiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY;
@@ -37,7 +37,7 @@ export default function MapPicker({ lat, lng, onChange }: Props) {
         draggable: true,
       });
 
-      marker.addListener('dragend', (event) => {
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
         const newLat = event.latLng?.lat();
         const newLng = event.latLng?.lng();
         if (newLat && newLng) {
@@ -45,7 +45,7 @@ export default function MapPicker({ lat, lng, onChange }: Props) {
         }
       });
 
-      map.addListener('click', (e) => {
+      map.addListener('click', (e: google.maps.MapMouseEvent) => {
         const clickedLat = e.latLng?.lat();
         const clickedLng = e.latLng?.lng();
         if (clickedLat && clickedLng) {

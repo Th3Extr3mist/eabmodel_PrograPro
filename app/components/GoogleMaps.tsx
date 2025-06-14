@@ -6,6 +6,8 @@ import { Loader } from '@googlemaps/js-api-loader';
 export interface MapEvent {
   id: number;
   title: string;
+  description: string;
+  image: string;
   lat: number;
   lng: number;
 }
@@ -26,21 +28,20 @@ export default function GoogleMaps({ events }: { events: MapEvent[] }) {
 
     loader.load()
       .then(() => {
-        // Inicializa el mapa centrado en el primer evento
+        // Centrar en el primer evento
         const map = new window.google.maps.Map(mapRef.current as HTMLDivElement, {
           center: { lat: events[0].lat, lng: events[0].lng },
           zoom: 12,
           mapId: 'NEXT_MAPS_TUTS',
         });
 
-        // Agrega marcadores para cada evento
-        events.forEach(({ id, title, lat, lng }) => {
-          const marker = new window.google.maps.Marker({
+        // Agregar marcadores para todos los eventos
+        events.forEach(({ title, lat, lng }) => {
+          new window.google.maps.Marker({
             map,
             position: { lat, lng },
             title,
           });
-          // Opcional: puedes guardar referencias a los marcadores si necesitas interactividad
         });
       })
       .catch((err) => console.error('Error al cargar Google Maps:', err));
