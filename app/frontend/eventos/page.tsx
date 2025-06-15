@@ -6,7 +6,7 @@ import { create } from "zustand";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import GoogleMaps from "../components/GoogleMaps";
+import GoogleMaps from "../../components/GoogleMaps";
 
 interface EventStore {
   attending: Record<number, boolean>;

@@ -1,7 +1,7 @@
 // app/events/[id]/page.tsx
 import React from 'react';
 import { notFound } from 'next/navigation';
-import EventDetail, { EventDetailProps } from '../../components/EventDetail';
+import EventDetail, { EventDetailProps } from '../../../components/EventDetail';
 
 interface Params {
   params: { id: string };

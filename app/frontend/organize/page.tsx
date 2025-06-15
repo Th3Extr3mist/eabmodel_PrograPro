@@ -6,9 +6,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import TimePicker from '../components/TimePicker';
+import TimePicker from '../../components/TimePicker';
 
-const MapPicker = dynamic(() => import('../components/MapPicker'), { ssr: false });
+const MapPicker = dynamic(() => import('../../components/MapPicker'), { ssr: false });
 
 type Location = { location_id: number; address: string };
 type Organizer = { organizer_id: number; organizer_name: string };
