@@ -156,33 +156,36 @@ export default function EventList() {
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 rounded-lg shadow-lg flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-900">Eventos</h1>
-        {!isSidebarOpen && (
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="top-7 right-6 z-50 bg-white-800 text-gray px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700"
-          >
-            ☰ Menú
-          </button>
-        )}
-        <div
-          ref={sidebarRef}
-          className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-40 ${
-            isSidebarOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+     {/* Botón para abrir menú */}
+     {!isSidebarOpen && (
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="top-7 right-6 z-50 bg-white-800 text-gray px-4 py-2 rounded-lg shadow-lg hover:bg-gray-700"
         >
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="absolute top-4 right-4 text-gray-600 text-2xl"
-          >
-            ×
-          </button>
-          <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
-            <button onClick={() => { router.push("/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
-            <button onClick={() => { router.push("/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
-            <button onClick={() => { router.push("/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
-            <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className="mt-4 text-red-600 hover:text-red-800 font-semibold">Cerrar Sesión</button>
-          </nav>
-        </div>
+        ☰ Menú
+        </button>
+      )}
+      {/* Sidebar */}
+      <div
+        ref={sidebarRef} // 
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-40 ${
+          isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <button
+          onClick={() => setIsSidebarOpen(false)}
+          className="absolute top-4 right-4 text-gray-600 text-2xl"
+        >
+          ×
+        </button>
+        <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
+          <button onClick={() => { router.push("/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
+          <button onClick={() => { router.push("/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
+          <button onClick={() => { router.push("/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
+          <button onClick={() => { router.push("/organize"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Organizar Evento</button>
+          <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className="mt-4 text-red-600 hover:text-red-800 font-semibold">Cerrar Sesión</button>
+        </nav>
+      </div>
       </nav>
       <h1 className="text-4xl font-bold mt-6 mb-6 text-gray-800">Eventos</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
