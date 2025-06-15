@@ -1,7 +1,7 @@
 // hashPasswords.ts
 import dotenv from "dotenv";
 import { Pool } from "pg";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 

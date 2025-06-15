@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import jwt from "jsonwebtoken";
 import { serialize } from "cookie";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs';
 
 // Configura la conexión a la base de datos
 const pool = new Pool({

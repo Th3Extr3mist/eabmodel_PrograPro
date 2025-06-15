@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import prisma from '../../backend/config/prisma';
 import { CreateUserDto, UpdateUserDto } from '../../backend/dtos/user_dto';
