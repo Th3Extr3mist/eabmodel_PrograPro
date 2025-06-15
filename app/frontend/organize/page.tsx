@@ -54,7 +54,7 @@ export default function OrganizePage() {
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' });
-    router.push('/login');
+    router.push('/frontend/login');
   };
 
   const handleChange = (

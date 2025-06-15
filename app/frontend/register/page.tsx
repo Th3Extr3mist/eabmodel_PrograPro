@@ -59,7 +59,7 @@ export default function RegisterPage() {
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-900">Registro</h1>
         <button 
-          onClick={() => router.push("/login")} 
+          onClick={() => router.push("/frontend/login")} 
           className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
         >
           Volver al Login

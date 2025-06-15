@@ -94,7 +94,7 @@ export default function EventList() {
   const handleLogout = async () => {
     try {
       await fetch("/api/logout", { method: "POST" });
-      router.push("frontend/login");
+      router.push("/frontend/login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
