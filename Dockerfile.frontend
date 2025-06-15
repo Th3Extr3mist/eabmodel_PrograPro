@@ -1,0 +1,21 @@
+# Dockerfile.frontend
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY prisma ./prisma
+COPY . .
+
+RUN npm install
+
+# Genera Prisma client (si lo necesitas en frontend)
+RUN npx prisma generate
+
+# Compila la app de Next.js
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

@@ -1,31 +1,42 @@
 'use client';
 
-import React from 'react';
-import { MobileTimePicker } from '@mui/x-date-pickers/MobileTimePicker';
-import { TextField } from '@mui/material';
-import dayjs from 'dayjs';
+import React, { ComponentProps } from 'react';
+import { MobileTimePicker } from '@mui/x-date-pickers';
+import { TextFieldProps } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
-interface HoraPickerProps {
+interface TimePickerProps {
   label: string;
-  value: string | null; // Hora en formato "HH:mm"
+  value: string | null;
   onChange: (newValue: string) => void;
 }
 
-const HoraPicker: React.FC<HoraPickerProps> = ({ label, value, onChange }) => {
+type MTProps = ComponentProps<typeof MobileTimePicker>;
+
+const TimePicker: React.FC<TimePickerProps> = ({ label, value, onChange }) => {
+  const timeValue: Dayjs | null = value ? dayjs(`2000-01-01T${value}`) : null;
+
+  const handleChange: MTProps['onChange'] = (newValue) => {
+    if (newValue && dayjs.isDayjs(newValue)) {
+      onChange(newValue.format('HH:mm'));
+    }
+  };
+
   return (
-    <MobileTimePicker
-      label={label}
-      value={value ? dayjs(`2000-01-01T${value}`) : null} // fecha fija para evitar zonas
-      onChange={(newValue) => {
-        if (newValue) {
-          const horaStr = newValue.format('HH:mm');
-          onChange(horaStr); // devuelve "HH:mm"
-        }
-      }}
-      ampm={false}
-      renderInput={(params) => <TextField {...params} fullWidth />}
-    />
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <MobileTimePicker
+        label={label}
+        value={timeValue}
+        onChange={handleChange}
+        ampm={false}
+        slotProps={{
+          textField: { fullWidth: true } as TextFieldProps,
+        }}
+      />
+    </LocalizationProvider>
   );
 };
 
-export default HoraPicker;
+export default TimePicker;

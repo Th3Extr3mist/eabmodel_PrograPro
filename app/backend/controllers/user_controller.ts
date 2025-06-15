@@ -2,18 +2,20 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { hash } from 'bcrypt';
+import { hash } from 'bcryptjs';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import prisma from '../../backend/config/prisma';
 import { CreateUserDto, UpdateUserDto } from '../../backend/dtos/user_dto';
 import { isValidUUID } from '../../backend/utils/validators';
+import { getAuthToken } from '@/lib/auth';
 
 export class UserController {
   static async create(req: NextRequest) {
     try {
       const body = await req.json();
-      const dto  = plainToInstance(CreateUserDto, body);
+      const dto = plainToInstance(CreateUserDto, body);
       const errors = await validate(dto);
+      
       if (errors.length) {
         const errorMessages = errors.map(e => ({
           field: e.property,
@@ -28,10 +30,10 @@ export class UserController {
       const hashed = await hash(dto.user_password, 12);
       const newUser = await prisma.appuser.create({
         data: {
-          email:         dto.email,
-          user_name:     dto.user_name,
+          email: dto.email,
+          user_name: dto.user_name,
           user_password: hashed,
-          age:           dto.age
+          age: dto.age
         }
       });
 
@@ -64,11 +66,11 @@ export class UserController {
   static async getAll() {
     try {
       const users = await prisma.appuser.findMany();
-      const safe = users.map((u:any) => ({
-        user_id:   u.user_id,
-        email:     u.email,
+      const safe = users.map((u: any) => ({
+        user_id: u.user_id,
+        email: u.email,
         user_name: u.user_name,
-        age:       u.age
+        age: u.age
       }));
       return NextResponse.json(safe);
     } catch (error) {
@@ -118,8 +120,9 @@ export class UserController {
       }
 
       const body = await req.json();
-      const dto  = plainToInstance(UpdateUserDto, body);
+      const dto = plainToInstance(UpdateUserDto, body);
       const errors = await validate(dto);
+      
       if (errors.length) {
         const errorMessages = errors.map(e => ({
           field: e.property,
@@ -132,9 +135,9 @@ export class UserController {
       }
 
       const data: Record<string, any> = {};
-      if (dto.email)            data.email         = dto.email;
-      if (dto.user_name)        data.user_name     = dto.user_name;
-      if (dto.age !== undefined) data.age          = dto.age;
+      if (dto.email) data.email = dto.email;
+      if (dto.user_name) data.user_name = dto.user_name;
+      if (dto.age !== undefined) data.age = dto.age;
       if (dto.user_password) {
         data.user_password = await hash(dto.user_password, 12);
       }
@@ -175,4 +178,49 @@ export class UserController {
       );
     }
   }
+
+  static async getCurrentUser(req: NextRequest) {
+  try {
+    const authToken = getAuthToken();
+
+    if (
+      !authToken ||
+      typeof authToken !== 'object' ||
+      !('userId' in authToken) ||
+      typeof authToken.userId !== 'string'
+    ) {
+      return NextResponse.json(
+        { error: "Usuario no autenticado" },
+        { status: 401 }
+      );
+    }
+
+    const { userId } = authToken as { userId: string };
+
+    const user = await prisma.appuser.findUnique({
+      where: { user_id: userId },
+      select: {
+        user_id: true,
+        email: true,
+        user_name: true,
+        age: true
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Usuario no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('[USER_CONTROLLER] Error al obtener usuario actual:', error);
+    return NextResponse.json(
+      { error: "Error del servidor" },
+      { status: 500 }
+    );
+  }
+}
 }

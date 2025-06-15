@@ -1,0 +1,27 @@
+services:
+  backend:
+    container_name: eabmodel-backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgres://<tu_usuario>:<tu_password>@<tu_host>.neon.tech/<tu_db>?sslmode=require
+    networks:
+      - app-network
+
+  frontend:
+    container_name: eabmodel-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL="postgresql://neondb_owner:npg_pcQSTN39FRio@ep-holy-scene-a5j0j49d-pooler.us-east-2.aws.neon.tech/eventosdb?sslmode=require"
+    networks:
+      - app-network
+
+networks:
+  app-network:
