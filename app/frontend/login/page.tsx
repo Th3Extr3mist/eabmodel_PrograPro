@@ -25,7 +25,7 @@ export default function LoginPage() {
       if (res.ok) {
         const authCheck = await fetch("/api/auth/check");
         if (authCheck.ok) {
-          router.push("/eventos");
+          router.push("/frontend/eventos");
           router.refresh();
         } else {
           setError("Error al establecer la sesión");
@@ -47,13 +47,13 @@ export default function LoginPage() {
         <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
         <div>
           <button
-            onClick={() => router.push("/register")}
+            onClick={() => router.push("frontend/register")}
             className="bg-blue-500 text-white px-4 py-1 rounded mx-2 hover:bg-blue-600"
           >
             Registrarse
           </button>
           <button
-            onClick={() => router.push("/organize")}
+            onClick={() => router.push("frontend/organize")}
             className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
           >
             Organizador

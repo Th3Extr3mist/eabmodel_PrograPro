@@ -94,7 +94,7 @@ export default function EventList() {
   const handleLogout = async () => {
     try {
       await fetch("/api/logout", { method: "POST" });
-      router.push("/login");
+      router.push("frontend/login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
@@ -179,10 +179,11 @@ export default function EventList() {
           ×
         </button>
         <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
-          <button onClick={() => { router.push("/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
-          <button onClick={() => { router.push("/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
-          <button onClick={() => { router.push("/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
-          <button onClick={() => { router.push("/organize"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Organizar Evento</button>
+          <button onClick={() => { router.push('/frontend/eventos'); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos</button>
+          <button onClick={() => { router.push("/frontend/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
+          <button onClick={() => { router.push("/frontend/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
+          <button onClick={() => { router.push("/frontend/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
+          <button onClick={() => { router.push("/frontend/organize"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Organizar Evento</button>
           <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className="mt-4 text-red-600 hover:text-red-800 font-semibold">Cerrar Sesión</button>
         </nav>
       </div>

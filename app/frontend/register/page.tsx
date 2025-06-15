@@ -47,7 +47,7 @@ export default function RegisterPage() {
         document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`; // Guarda el token como cookie por 1 hora
       }
 
-      window.location.assign("/eventos"); // Redirige a la página de eventos
+      window.location.assign("/frontend/eventos"); // Redirige a la página de eventos
     } catch (err) {
       console.error(err); 
       setError("Error de conexión con el servidor"); 
