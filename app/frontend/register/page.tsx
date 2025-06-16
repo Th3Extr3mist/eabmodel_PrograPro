@@ -8,6 +8,9 @@ export default function RegisterPage() {
   const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState(""); 
   const [confirmPassword, setConfirmPassword] = useState(""); 
+  const [preference1, setPreference1] = useState("");
+  const [preference2, setPreference2] = useState("");
+  const [preference3, setPreference3] = useState("");
   const [showPassword, setShowPassword] = useState(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
   const [error, setError] = useState(""); 
@@ -16,41 +19,44 @@ export default function RegisterPage() {
   const handleRegister = async (e: React.FormEvent) => { 
     e.preventDefault();
 
-    if (!username || !email || !password || !confirmPassword) { // Verifica que todos los campos estén llenos
-      setError("Todos los campos son obligatorios"); // Muestra error si algún campo falta
+    if (!username || !email || !password || !confirmPassword) {
+      setError("Todos los campos son obligatorios");
       return;
     }
 
-    if (password !== confirmPassword) { // Verifica que las contraseñas coincidan
-      setError("Las contraseñas no coinciden"); // Muestra error si no coinciden
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
       return;
     }
 
     try {
-      const res = await fetch("/api/register", { // Hace una petición POST al backend
+      const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_name: username, 
           email, 
           user_password: password, 
+          preference_1: preference1,
+          preference_2: preference2,
+          preference_3: preference3,
         }),
       });
 
-      const data = await res.json(); //Realiza un request a la base de datos para saber si el registro fue guardado
+      const data = await res.json();
 
       if (!res.ok) { 
         setError(data.error || "Error al registrar"); 
         return;
       }
 
-      if (data.token) { // Si se recibe un token
-        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`; // Guarda el token como cookie por 1 hora
+      if (data.token) {
+        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`;
       }
 
-      window.location.assign("/frontend/eventos"); // Redirige a la página de eventos
+      window.location.assign("/frontend/eventos");
     } catch (err) {
-      console.error(err); 
+      console.error(err);
       setError("Error de conexión con el servidor"); 
     }
   };
@@ -66,9 +72,11 @@ export default function RegisterPage() {
           Volver al Login
         </button>
       </nav>
+
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Cuenta</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        
         <form onSubmit={handleRegister}>
           <input
             type="text"
@@ -86,6 +94,30 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
+          {/* Nuevos campos de preferencia */}
+          <input
+            type="text"
+            placeholder="Preferencia 1 (outdoor o indoor)"
+            className="w-full p-2 border rounded mb-2"
+            value={preference1}
+            onChange={(e) => setPreference1(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Preferencia 2 (geek o cultural)"
+            className="w-full p-2 border rounded mb-2"
+            value={preference2}
+            onChange={(e) => setPreference2(e.target.value)}
+          />
+          <input
+            type="text"
+            placeholder="Preferencia 3 (solo o grupo)"
+            className="w-full p-2 border rounded mb-2"
+            value={preference3}
+            onChange={(e) => setPreference3(e.target.value)}
+          />
+
           <div className="relative w-full">
             <input
               type={showPassword ? "text" : "password"}
@@ -103,6 +135,7 @@ export default function RegisterPage() {
               {showPassword ? "Ocultar" : "Mostrar"}
             </button>
           </div>
+
           <div className="relative w-full">
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -120,6 +153,7 @@ export default function RegisterPage() {
               {showConfirmPassword ? "Ocultar" : "Mostrar"}
             </button>
           </div>
+
           <button
             type="submit"
             className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
