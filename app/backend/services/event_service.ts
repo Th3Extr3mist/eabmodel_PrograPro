@@ -15,7 +15,10 @@ export const EventService = {
         end_time: new Date(`1970-01-01T${dto.end_time}Z`),
         price: dto.price,
         availability: dto.availability ?? 0,
-        // Asegura que lat y lng sean números válidos o les asigna un valor por defecto
+        preference_1: dto.preference_1,
+        preference_2: dto.preference_2,
+        preference_3: dto.preference_3,
+        weather_preference: dto.weather_preference,
         lat: (dto.lat !== undefined && !isNaN(dto.lat)) ? dto.lat : 0,
         lng: (dto.lng !== undefined && !isNaN(dto.lng)) ? dto.lng : 0,
         image: dto.image ?? undefined,
@@ -58,6 +61,10 @@ export const EventService = {
     const data: any = {
       ...(dto.event_name && { event_name: dto.event_name }),
       ...(dto.description && { description: dto.description }),
+      ...(dto.preference_1 && {preference_1: dto.preference_1}),
+      ...(dto.preference_2 && {preference_2: dto.preference_2}),
+      ...(dto.preference_3 && {preference_3: dto.preference_3}),
+      ...(dto.weather_preference && {weather_preference: dto.weather_preference}),
       ...(dto.event_date && { event_date: new Date(dto.event_date) }),
       ...(dto.start_time && { start_time: new Date(`1970-01-01T${dto.start_time}Z`) }),
       ...(dto.end_time && { end_time: new Date(`1970-01-01T${dto.end_time}Z`) }),
