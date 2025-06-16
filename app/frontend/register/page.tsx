@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import bcrypt from "bcryptjs";
 
 export default function RegisterPage() { 
   const [username, setUsername] = useState(""); 
