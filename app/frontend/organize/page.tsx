@@ -10,8 +10,8 @@ import TimePicker from '../../components/TimePicker';
 
 const MapPicker = dynamic(() => import('../../components/MapPicker'), { ssr: false });
 
-type Location = { location_id: number; address: string };
-type Organizer = { organizer_id: number; organizer_name: string };
+type Location = { location_id: number; name?: string; address?: string };
+type Organizer = { organizer_id: number; name: string };
 
 export default function OrganizePage() {
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function OrganizePage() {
     setEvento(prev => ({
       ...prev,
       [name]: ['organizer_id', 'location_id'].includes(name)
-        ? parseInt(value, 10) || 0
+        ? parseInt(value, 10) || 0 
         : value,
     }));
   };
@@ -99,6 +99,17 @@ export default function OrganizePage() {
       return;
     }
 
+    // Validation for invalid organizer or location
+    if (evento.organizer_id && !organizers.some(o => o.organizer_id === evento.organizer_id)) {
+      setError('Organizador no válido');
+      return;
+    }
+
+    if (evento.location_id && !locations.some(l => l.location_id === evento.location_id)) {
+      setError('Ubicación no válida');
+      return;
+    }
+
     const form = new FormData();
     Object.entries(evento).forEach(([k, v]) => form.append(k, String(v)));
     if (imageFile) form.append('image', imageFile);
@@ -109,7 +120,7 @@ export default function OrganizePage() {
     } else {
       setSuccess('Evento creado correctamente');
       alert('¡Evento creado correctamente!');
-      setTimeout(() => router.push('/eventos'), 2000);
+      setTimeout(() => router.push('/frontend/eventos'), 2000);
     }
   };
 
@@ -118,7 +129,7 @@ export default function OrganizePage() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className="flex flex-col min-h-screen bg-gray-100 p-6 text-gray-900">
-        {/* NAVBAR CON MENÚ */}
+        {/* NAVBAR */}
         <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 rounded-lg shadow-lg flex justify-between items-center mb-4">
           <h1 className="text-lg font-bold text-gray-900">Organizar Evento</h1>
           {!isSidebarOpen && (
@@ -207,7 +218,7 @@ export default function OrganizePage() {
                 <option value={0}>-- Organizador --</option>
                 {organizers.map((o) => (
                   <option key={o.organizer_id} value={o.organizer_id}>
-                    {o.organizer_name}
+                    {o.name}
                   </option>
                 ))}
               </select>
@@ -222,7 +233,7 @@ export default function OrganizePage() {
                 <option value={0}>-- Ubicación --</option>
                 {locations.map((l) => (
                   <option key={l.location_id} value={l.location_id}>
-                    {l.address}
+                    {l.name ?? l.address}
                   </option>
                 ))}
               </select>
