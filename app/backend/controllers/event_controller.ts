@@ -18,7 +18,7 @@ export class EventController {
       const dtoRaw: Record<string, any> = {};
 
       // Campos de tipo string
-      const strFields = ["event_name", "event_date", "description", "start_time", "end_time"];
+      const strFields = ["event_name", "event_date", "description","preference_1","preference_2","preference_3","weather_preference", "start_time", "end_time"];
       // Campos de tipo entero
       const intFields = ["organizer_id", "location_id", "availability"];
       // Campos de tipo flotante

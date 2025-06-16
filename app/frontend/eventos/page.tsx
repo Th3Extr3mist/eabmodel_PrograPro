@@ -106,7 +106,7 @@ export default function EventList() {
       <div className="flex overflow-x-auto space-x-4 pb-2 scroll-smooth">
         {eventos.map((event) => (
           <Link
-            href={`frontend/eventos/${event.event_id}`}
+            href={`/frontend/eventos/${event.event_id}`}
             key={event.event_id}
             className="min-w-[300px] bg-white rounded-lg shadow-md mb-4"
           >
