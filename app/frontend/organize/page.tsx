@@ -19,17 +19,21 @@ export default function OrganizePage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
   const [evento, setEvento] = useState({
-    event_name: '',
-    event_date: '',
-    description: '',
-    start_time: '12:00',
-    end_time: '13:00',
-    organizer_id: 0,
-    location_id: 0,
-    price: '',
-    availability: '',
-    lat: 0,
-    lng: 0,
+     event_name: '',
+  event_date: '',
+  description: '',
+  start_time: '12:00',
+  end_time: '13:00',
+  organizer_id: 0,
+  location_id: 0,
+  price: '',
+  availability: '',
+  lat: 0,
+  lng: 0,
+  preference_1: '',
+  preference_2: '',
+  preference_3: '',
+  weather_preference: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -109,7 +113,7 @@ export default function OrganizePage() {
     } else {
       setSuccess('Evento creado correctamente');
       alert('¡Evento creado correctamente!');
-      setTimeout(() => router.push('/eventos'), 2000);
+      setTimeout(() => router.push('/frontend/eventos'), 2000);
     }
   };
 
@@ -183,7 +187,34 @@ export default function OrganizePage() {
                 onChange={handleChange}
                 required
               />
-
+              <input
+                name="preference_1"
+                placeholder="Preferencia 1 (outdoor o indoor)"
+                className="w-full p-2 border rounded"
+                value={evento.preference_1}
+                onChange={handleChange}
+              />
+              <input
+                name="preference_2"
+                placeholder="Preferencia 2()"
+                className="w-full p-2 border rounded"
+                value={evento.preference_2}
+                onChange={handleChange}
+              />
+              <input
+                name="preference_3"
+                placeholder="Preferencia 3"
+                className="w-full p-2 border rounded"
+                value={evento.preference_3}
+                onChange={handleChange}
+              />
+              <input
+                name="weather_preference"
+                placeholder="Clima preferente para el evento"
+                className="w-full p-2 border rounded"
+                value={evento.weather_preference}
+                onChange={handleChange}
+              />
               <div className="flex space-x-4">
                 <TimePicker
                   label="Hora inicio"
