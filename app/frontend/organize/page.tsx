@@ -11,7 +11,7 @@ import TimePicker from '../../components/TimePicker';
 const MapPicker = dynamic(() => import('../../components/MapPicker'), { ssr: false });
 
 type Location = { location_id: number; name?: string; address?: string };
-type Organizer = { organizer_id: number; name: string };
+type Organizer = { organizer_id: number; organizer_name: string };
 
 export default function OrganizePage() {
   const router = useRouter();
@@ -46,7 +46,8 @@ export default function OrganizePage() {
     setMounted(true);
     fetch('/api/locations').then(r => r.json()).then(setLocations);
     fetch('/api/organizers').then(r => r.json()).then(setOrganizers);
-
+    console.log(organizers);
+    
     const handleClickOutside = (e: MouseEvent) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
         setIsSidebarOpen(false);
@@ -249,7 +250,7 @@ export default function OrganizePage() {
                 <option value={0}>-- Organizador --</option>
                 {organizers.map((o) => (
                   <option key={o.organizer_id} value={o.organizer_id}>
-                    {o.name}
+                    {o.organizer_name}
                   </option>
                 ))}
               </select>
