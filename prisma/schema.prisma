@@ -8,7 +8,7 @@ datasource db {
 }
 
 model appuser {
-  user_id            Int           @id @default(autoincrement())
+  user_id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email              String        @unique @db.VarChar(255)
   user_name          String        @db.VarChar(100)
   age                Int?
@@ -23,7 +23,7 @@ model appuser {
 }
 
 model client {
-  client_id          Int     @id @default(autoincrement())
+  client_id          String  @id @db.Uuid
   preference_history String?
   appuser            appuser @relation(fields: [client_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
 }
@@ -68,7 +68,7 @@ model organizer {
 
 model reservation {
   reservation_id   Int        @id @default(autoincrement())
-  user_id          Int?
+  user_id          String?    @db.Uuid
   event_id         Int?
   ticket_quantity  Int?
   reservation_date DateTime?  @db.Date

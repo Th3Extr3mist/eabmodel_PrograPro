@@ -6,7 +6,6 @@ import { hash } from 'bcryptjs';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import prisma from '../../backend/config/prisma';
 import { CreateUserDto, UpdateUserDto } from '../../backend/dtos/user_dto';
-import { isValidUUID } from '../../backend/utils/validators';
 import { getAuthToken } from '@/lib/auth';
 
 export class UserController {
@@ -84,14 +83,16 @@ export class UserController {
 
   static async getById(userId: string) {
     try {
-      if (!isValidUUID(userId)) {
+      const id = parseInt(userId);
+      if (isNaN(id)) {
         return NextResponse.json(
           { message: 'Invalid user ID format' },
           { status: 400 }
         );
       }
+
       const u = await prisma.appuser.findUnique({
-        where: { user_id: userId }
+        where: { user_id: id }
       });
       if (!u) {
         return NextResponse.json(
@@ -112,7 +113,8 @@ export class UserController {
 
   static async update(userId: string, req: NextRequest) {
     try {
-      if (!isValidUUID(userId)) {
+      const id = parseInt(userId);
+      if (isNaN(id)) {
         return NextResponse.json(
           { message: 'Invalid user ID format' },
           { status: 400 }
@@ -143,7 +145,7 @@ export class UserController {
       }
 
       const updated = await prisma.appuser.update({
-        where: { user_id: userId },
+        where: { user_id: id },
         data
       });
 
@@ -160,14 +162,16 @@ export class UserController {
 
   static async delete(userId: string) {
     try {
-      if (!isValidUUID(userId)) {
+      const id = parseInt(userId);
+      if (isNaN(id)) {
         return NextResponse.json(
           { message: 'Invalid user ID format' },
           { status: 400 }
         );
       }
+
       await prisma.appuser.delete({
-        where: { user_id: userId }
+        where: { user_id: id }
       });
       return new NextResponse(null, { status: 204 });
     } catch (error) {
@@ -180,47 +184,47 @@ export class UserController {
   }
 
   static async getCurrentUser(req: NextRequest) {
-  try {
-    const authToken = getAuthToken();
+    try {
+      const authToken = getAuthToken();
 
-    if (
-      !authToken ||
-      typeof authToken !== 'object' ||
-      !('userId' in authToken) ||
-      typeof authToken.userId !== 'string'
-    ) {
-      return NextResponse.json(
-        { error: "Usuario no autenticado" },
-        { status: 401 }
-      );
-    }
-
-    const { userId } = authToken as { userId: string };
-
-    const user = await prisma.appuser.findUnique({
-      where: { user_id: userId },
-      select: {
-        user_id: true,
-        email: true,
-        user_name: true,
-        age: true
+      if (
+        !authToken ||
+        typeof authToken !== 'object' ||
+        !('userId' in authToken) ||
+        typeof authToken.userId !== 'number'
+      ) {
+        return NextResponse.json(
+          { error: "Usuario no autenticado" },
+          { status: 401 }
+        );
       }
-    });
 
-    if (!user) {
+      const { userId } = authToken as { userId: number };
+
+      const user = await prisma.appuser.findUnique({
+        where: { user_id: userId },
+        select: {
+          user_id: true,
+          email: true,
+          user_name: true,
+          age: true
+        }
+      });
+
+      if (!user) {
+        return NextResponse.json(
+          { error: "Usuario no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(user);
+    } catch (error) {
+      console.error('[USER_CONTROLLER] Error al obtener usuario actual:', error);
       return NextResponse.json(
-        { error: "Usuario no encontrado" },
-        { status: 404 }
+        { error: "Error del servidor" },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error('[USER_CONTROLLER] Error al obtener usuario actual:', error);
-    return NextResponse.json(
-      { error: "Error del servidor" },
-      { status: 500 }
-    );
   }
-}
 }
