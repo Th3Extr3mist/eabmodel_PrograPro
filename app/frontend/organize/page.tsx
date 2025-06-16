@@ -207,21 +207,21 @@ export default function OrganizePage() {
               />
               <input
                 name="preference_2"
-                placeholder="Preferencia 2()"
+                placeholder="Preferencia 2 (geek o cultural)"
                 className="w-full p-2 border rounded"
                 value={evento.preference_2}
                 onChange={handleChange}
               />
               <input
                 name="preference_3"
-                placeholder="Preferencia 3"
+                placeholder="Preferencia 3 (solo o grupo)"
                 className="w-full p-2 border rounded"
                 value={evento.preference_3}
                 onChange={handleChange}
               />
               <input
                 name="weather_preference"
-                placeholder="Clima preferente para el evento"
+                placeholder="Clima preferente para el evento (despejado o lluvia)"
                 className="w-full p-2 border rounded"
                 value={evento.weather_preference}
                 onChange={handleChange}
