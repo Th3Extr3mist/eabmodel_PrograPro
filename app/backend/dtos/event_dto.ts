@@ -11,6 +11,22 @@ export class CreateEventDto {
   })
   description!: string;
 
+  @IsOptional()
+  @IsString()
+  preference_1?: string;
+
+  @IsOptional()
+  @IsString()
+  preference_2?: string;
+
+  @IsOptional()
+  @IsString()
+  preference_3?: string;
+
+  @IsOptional()
+  @IsString()
+  weather_preference?: string;
+
   @IsDateString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)
   event_date!: string;
@@ -57,6 +73,22 @@ export class UpdateEventDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  preference_1?: string;
+
+  @IsOptional()
+  @IsString()
+  preference_2?: string;
+
+  @IsOptional()
+  @IsString()
+  preference_3?: string;
+
+  @IsOptional()
+  @IsString()
+  weather_preference?: string;
 
   @IsOptional()
   @IsDateString()
@@ -110,6 +142,18 @@ export class EventResponseDto {
 
   @Expose()
   description!: string;
+
+  @Expose()
+  preference_1?: string;
+
+  @Expose()
+  preference_2?: string;
+
+  @Expose()
+  preference_3?: string;
+
+  @Expose()
+  weather_preference?: string;
 
   @Expose()
   event_date!: string;
