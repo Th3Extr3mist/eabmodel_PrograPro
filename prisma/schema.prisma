@@ -8,17 +8,18 @@ datasource db {
 }
 
 model appuser {
-  user_id       Int           @id @default(autoincrement())
-  email         String        @unique @db.VarChar(255)
-  user_name     String        @db.VarChar(100)
-  age           Int?
-  user_type     String?       @db.VarChar(50)
-  user_password String        @db.VarChar(255)
-  preference_1  String?
-  preference_2  String?
-  preference_3  String?
-  client        client?
-  reservation   reservation[]
+  user_id            Int           @id @default(autoincrement())
+  email              String        @unique @db.VarChar(255)
+  user_name          String        @db.VarChar(100)
+  age                Int?
+  user_type          String?       @db.VarChar(50)
+  user_password      String        @db.VarChar(255)
+  preference_1       String?
+  preference_2       String?
+  preference_3       String?
+  weather_preference String?
+  client             client?
+  reservation        reservation[]
 }
 
 model client {
@@ -28,19 +29,26 @@ model client {
 }
 
 model eventinfo {
-  event_id      Int            @id @default(autoincrement())
-  organizer_id  Int?
-  event_name    String         @db.VarChar(100)
-  description   String?
-  event_date    DateTime?      @db.Date
-  start_time    DateTime?      @db.Time(6)
-  end_time      DateTime?      @db.Time(6)
-  location_id   Int?
-  price         Decimal?       @db.Decimal(10, 2)
-  availability  Int?
-  eventlocation eventlocation? @relation(fields: [location_id], references: [location_id], onUpdate: NoAction)
-  organizer     organizer?     @relation(fields: [organizer_id], references: [organizer_id], onDelete: Cascade, onUpdate: NoAction)
-  reservation   reservation[]
+  event_id           Int            @id @default(autoincrement())
+  organizer_id       Int?
+  event_name         String         @db.VarChar(100)
+  description        String?
+  preference_1       String?
+  preference_2       String?
+  preference_3       String?
+  weather_preference String?
+  event_date         DateTime?      @db.Date
+  start_time         DateTime?      @db.Time(6)
+  end_time           DateTime?      @db.Time(6)
+  location_id        Int?
+  price              Decimal?       @db.Decimal(10, 2)
+  availability       Int?
+  lat                Float?
+  lng                Float?
+  image              String?
+  eventlocation      eventlocation? @relation(fields: [location_id], references: [location_id], onUpdate: NoAction)
+  organizer          organizer?     @relation(fields: [organizer_id], references: [organizer_id], onDelete: Cascade, onUpdate: NoAction)
+  reservation        reservation[]
 }
 
 model eventlocation {

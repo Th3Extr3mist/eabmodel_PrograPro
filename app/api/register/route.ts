@@ -1,80 +1,102 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { serialize } from "cookie";
 
-// Configura conexión con la base de datos de Neon
+// Configura la conexión a la base de datos
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Clave secreta para firmar el JWT
+// Clave secreta para JWT
 const SECRET_KEY = process.env.JWT_SECRET_KEY || "your-secret-key";
 
-// Manejador POST para registrar un nuevo usuario
-export async function POST(request: NextRequest) {
+if (!process.env.JWT_SECRET_KEY) {
+  console.warn("ADVERTENCIA: Se está usando una clave JWT por defecto. Esto es inseguro en producción.");
+}
+
+// Maneja peticiones POST para registro
+export async function POST(request: Request) {
   try {
-    // Llama a la base de datos para ver si existen los siguientes campos
     const { user_name, email, user_password } = await request.json();
 
-    // Verifica que todos los campos estén presentes
-    if (!user_name || !email || !user_password) {
-      return NextResponse.json({ error: "Faltan campos" }, { status: 400 });
+    if (!email || !user_password || !user_name) {
+      return NextResponse.json(
+        { error: "Email, contraseña y nombre son requeridos" },
+        { status: 400 }
+      );
     }
 
-    // Conecta con la base de datos
     const client = await pool.connect();
 
-    // Verifica si el correo ya está registrado
-    const checkUserQuery = "SELECT * FROM AppUser WHERE email = $1";
-    const userExists = await client.query(checkUserQuery, [email]);
+    try {
+      // Verifica si el email ya está registrado
+      const checkUser = await client.query(
+        "SELECT * FROM AppUser WHERE email = $1",
+        [email]
+      );
 
-    if (userExists.rows.length > 0) {
+      if (checkUser.rows.length > 0) {
+        return NextResponse.json(
+          { error: "El correo ya está registrado" },
+          { status: 400 }
+        );
+      }
+
+      // Encripta la contraseña
+      const hashedPassword = await bcrypt.hash(user_password, 10);
+
+      // Inserta el nuevo usuario
+      const insertUser = await client.query(
+        `INSERT INTO AppUser (user_name, email, user_password)
+         VALUES ($1, $2, $3)
+         RETURNING user_id, email`,
+        [user_name, email, hashedPassword]
+      );
+
+      const newUser = insertUser.rows[0];
+
+      // Genera el token JWT
+      const token = jwt.sign(
+        { userId: newUser.user_id, email: newUser.email },
+        SECRET_KEY,
+        { expiresIn: "1h" }
+      );
+
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        maxAge: 60 * 60,
+        path: "/",
+      };
+
+      const serializedToken = serialize("authToken", token, cookieOptions);
+
+      const response = NextResponse.json(
+        {
+          success: true,
+          token,
+          user: {
+            id: newUser.user_id,
+            email: newUser.email,
+          }
+        },
+        { status: 201 }
+      );
+
+      response.headers.append("Set-Cookie", serializedToken);
+      return response;
+    } finally {
       client.release();
-      return NextResponse.json({ error: "El correo ya está registrado" }, { status: 400 });
     }
-
-    // Inserta el nuevo usuario en la base de datos
-    const insertQuery = `
-      INSERT INTO AppUser (user_name, email, user_password)
-      VALUES ($1, $2, $3)
-      RETURNING user_id, user_name, email;
-    `;
-
-    const result = await client.query(insertQuery, [user_name, email, user_password]);
-    client.release();
-
-    const newUser = result.rows[0];
-
-    // Crea un token JWT con los datos del usuario
-    const token = jwt.sign(
-      { userId: newUser.user_id, email: newUser.email },
-      SECRET_KEY,
-      { expiresIn: "1h" }  
-    );
-
-    // Serializa el token como cookie HTTP
-    const serializedToken = serialize("authToken", token, {
-      httpOnly: true,                           
-      secure: process.env.NODE_ENV === "production", 
-      sameSite: "strict",                       
-      maxAge: 60 * 60,                          
-      path: "/",                                
-    });
-
-    // Construye y retorna la respuesta con la cookie incluida
-    const response = NextResponse.json({
-      success: true,
-      userId: newUser.user_id,
-      userName: newUser.user_name,
-      email: newUser.email,
-    });
-
-    response.headers.set("Set-Cookie", serializedToken);
-
-    return response;
   } catch (error) {
-    console.error("Error al registrar:", error);
-    return NextResponse.json({ error: "Error del servidor" }, { status: 500 });
+    console.error("Error en el registro:", error);
+    return NextResponse.json(
+      { error: "Error del servidor" },
+      { status: 500 }
+    );
   }
 }
