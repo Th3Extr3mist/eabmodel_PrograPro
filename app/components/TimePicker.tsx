@@ -6,6 +6,9 @@ import { TextFieldProps } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs, { Dayjs } from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
 
 interface TimePickerProps {
   label: string;
@@ -16,13 +19,15 @@ interface TimePickerProps {
 type MTProps = ComponentProps<typeof MobileTimePicker>;
 
 const TimePicker: React.FC<TimePickerProps> = ({ label, value, onChange }) => {
-  const timeValue: Dayjs | null = value ? dayjs(`2000-01-01T${value}`) : null;
+  const timeValue: Dayjs | null = value ? dayjs(value, 'HH:mm') : null;
 
   const handleChange: MTProps['onChange'] = (newValue) => {
-    if (newValue && dayjs.isDayjs(newValue)) {
-      onChange(newValue.format('HH:mm'));
-    }
-  };
+  if (newValue && dayjs.isDayjs(newValue)) {
+    const formatted = newValue.format('HH:mm');
+    console.log('Hora seleccionada:', formatted);
+    onChange(formatted);
+  }
+};
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
