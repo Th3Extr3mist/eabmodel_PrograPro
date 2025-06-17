@@ -81,32 +81,36 @@ export default function EventList() {
   }, []);
 
   useEffect(() => {
-  async function fetchWeather() {
-    try {
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=Santiago,CL&appid=TU_API_KEY&units=metric`
-      );
-      const data = await res.json();
-      const weatherMain = data.weather[0].main.toLowerCase(); // ej. "clear", "rain", etc.
+  console.log("Intentando obtener el clima...");
+  fetch(`https://api.openweathermap.org/data/2.5/weather?q=Santiago,CL&appid=ec3b5c9883b52b8166d108472217ea8d&units=metric`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Datos del clima:", data); // 👈 log para debug
+      const weatherMain = data.weather[0].main.toLowerCase();
 
       if (weatherMain.includes("rain")) setCurrentWeather("lluvia");
       else if (weatherMain.includes("clear")) setCurrentWeather("soleado");
       else setCurrentWeather("indiferente");
-    } catch (err) {
+    })
+    
+    .catch(err => {
       console.error("Error al obtener el clima:", err);
       setCurrentWeather("indiferente");
-    }
-  }
-
-  fetchWeather();
+    });
+    console.log("Clima actual definido como:", currentWeather);
 }, []);
 
   const [currentWeather, setCurrentWeather] = useState<"soleado" | "lluvia" | "indiferente">("indiferente");
   const eventsGeneral = events.slice(0, 5);
   const eventsRecomen = events.slice(5, 15);
+  console.log("Eventos disponibles:", events);
+  console.log("Eventos que cumplen clima (soleado o indiferente):", events.filter(
+  (e) =>
+    e.weather_preference === "soleado" || e.weather_preference === "indiferente"
+));
   const eventsweather = events.filter(
-  (e) => e.weather_preference === currentWeather || e.weather_preference === "indiferente"
-  );
+  (e) => e.weather_preference === "indiferente" || e.weather_preference === "indiferente"
+  ).slice(0, 5); // los 5 eventos más cercanos
   const eventsclosecall = [...events]
   .filter(e => e.event_date) // opcional: filtra si algún evento no tiene fecha
   .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
