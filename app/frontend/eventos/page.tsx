@@ -197,15 +197,6 @@ export default function EventList() {
         {renderSection("Eventos Generales", eventsGeneral)}
         {renderSection("Eventos Próximos", eventsclosecall)}
       </div>
-
-      {mapEvents.length > 0 && (
-        <div className="w-full max-w-4xl mt-10">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">
-            Ubicaciones de los Eventos
-          </h2>
-          <GoogleMaps events={mapEvents} />
-        </div>
-      )}
     </div>
   );
 }

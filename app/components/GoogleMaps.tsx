@@ -31,7 +31,7 @@ export default function GoogleMaps({ events }: { events: MapEvent[] }) {
         // Centrar en el primer evento
         const map = new window.google.maps.Map(mapRef.current as HTMLDivElement, {
           center: { lat: events[0].lat, lng: events[0].lng },
-          zoom: 12,
+          zoom: 18,
           mapId: 'NEXT_MAPS_TUTS',
         });
 
