@@ -35,44 +35,40 @@ export default function ProfilePage() {
     };
   }, [isSidebarOpen]);
 
-  // Obtener el usuario con el token al cargar la página
+  // Obtener el usuario al cargar la página (con cookies HTTP-only)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setError("Usuario no autenticado");
-      return;
-    }
-
     fetch("/api/users/me", {
-      headers: {
-        Authorization: `Bearer ${token}`, // Incluir token en los headers
-      },
+      credentials: "include", // <-- importante para enviar cookies
     })
       .then((res) => {
         if (!res.ok) throw new Error("Error al obtener usuario");
         return res.json();
       })
       .then((data) => {
-        setUser(data); // Asignar los datos del usuario
+        // Adaptar datos al formato esperado
+        setUser({
+          user_name: data.nombre,
+          email: data.email,
+          preference_1: data.intereses[0],
+          preference_2: data.intereses[1],
+          preference_3: data.intereses[2],
+        });
       })
       .catch((err) => {
         console.error(err);
-        setError("No se pudo obtener el perfil");
+        setError("Usuario no autenticado");
       });
   }, []);
 
-  // Manejar la lógica de cierre de sesión
   const handleLogout = async () => {
     try {
-      await fetch("/api/logout", { method: "POST" });
-      localStorage.removeItem("token");
-      router.push("/frontend/login"); // Redirigir a la página de login
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+      router.push("/frontend/login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
   };
 
-  // Preparar los intereses del usuario para su visualización
   const intereses = [user?.preference_1, user?.preference_2, user?.preference_3].filter(Boolean);
 
   return (
@@ -110,7 +106,7 @@ export default function ProfilePage() {
       </nav>
 
       <h1 className="w-full text-xl font-bold mt-6 mb-6 text-gray-800">Bienvenido</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>} {/* Mostrar mensaje de error si hay uno */}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex items-center space-x-4">
