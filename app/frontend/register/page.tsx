@@ -1,22 +1,21 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import bcrypt from "bcryptjs";
 
-export default function RegisterPage() { 
-  const [username, setUsername] = useState(""); 
-  const [email, setEmail] = useState(""); 
-  const [password, setPassword] = useState(""); 
-  const [confirmPassword, setConfirmPassword] = useState(""); 
+export default function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [preference1, setPreference1] = useState("");
   const [preference2, setPreference2] = useState("");
   const [preference3, setPreference3] = useState("");
-  const [showPassword, setShowPassword] = useState(false); 
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
-  const [error, setError] = useState(""); 
-  const router = useRouter(); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
 
-  const handleRegister = async (e: React.FormEvent) => { 
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !email || !password || !confirmPassword) {
@@ -34,9 +33,9 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_name: username, 
-          email, 
-          user_password: password, 
+          user_name: username,
+          email,
+          user_password: password,
           preference_1: preference1,
           preference_2: preference2,
           preference_3: preference3,
@@ -45,19 +44,15 @@ export default function RegisterPage() {
 
       const data = await res.json();
 
-      if (!res.ok) { 
-        setError(data.error || "Error al registrar"); 
+      if (!res.ok) {
+        setError(data.error || "Error al registrar");
         return;
       }
 
-      if (data.token) {
-        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60}`;
-      }
-
-      window.location.assign("/frontend/eventos");
+      router.push("/frontend/eventos");
     } catch (err) {
       console.error(err);
-      setError("Error de conexión con el servidor"); 
+      setError("Error de conexión con el servidor");
     }
   };
 
@@ -65,8 +60,8 @@ export default function RegisterPage() {
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
       <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
         <h1 className="text-lg font-bold text-gray-900">Registro</h1>
-        <button 
-          onClick={() => router.push("/frontend/login")} 
+        <button
+          onClick={() => router.push("/frontend/login")}
           className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
         >
           Volver al Login
@@ -76,7 +71,7 @@ export default function RegisterPage() {
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 mt-10">
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">Crear Cuenta</h2>
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-        
+
         <form onSubmit={handleRegister}>
           <input
             type="text"
@@ -95,7 +90,6 @@ export default function RegisterPage() {
             required
           />
 
-          {/* Nuevos campos de preferencia */}
           <input
             type="text"
             placeholder="Preferencia 1 (outdoor o indoor)"
