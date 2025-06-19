@@ -6,8 +6,7 @@ services:
       dockerfile: Dockerfile.backend
     ports:
       - "4000:4000"
-    environment:
-      - DATABASE_URL=postgres://<tu_usuario>:<tu_password>@<tu_host>.neon.tech/<tu_db>?sslmode=require
+    env_file: .env
     networks:
       - app-network
 

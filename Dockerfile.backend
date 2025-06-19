@@ -2,20 +2,19 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copia los archivos necesarios
-COPY package*.json ./
+# Copiar archivos necesarios
+COPY package*.json tsconfig.json ./
 COPY prisma ./prisma
-COPY . .
+COPY app/backend ./app/backend
 
-# Instala bcrypt con compilación compatible con Alpine
-RUN apk add --no-cache python3 make g++ \
-  && npm install \
-  && apk del python3 make g++
+# Instala dependencias y tipos
+RUN npm install
 
-# Genera Prisma si es necesario
-RUN npx prisma generate
+# Compilar el backend TypeScript a JavaScript
+RUN npx tsc
 
 # Expón el puerto
 EXPOSE 4000
 
-CMD ["node", "backend/index.js"]
+# Ejecuta el archivo transpilado (ajusta si tu tsconfig cambia ruta)
+CMD ["node", "/app/backend/index.js"]

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build-backend": "tsc -p tsconfig.json",
+    "start-backend": "node dist/backend/index.js"
   },
   "dependencies": {
     "@braintree/sanitize-url": "^6.0.0",
@@ -46,6 +48,7 @@
     "@prisma/client": "^6.6.0",
     "@tailwindcss/postcss": "^4",
     "@types/cookie": "^0.6.0",
+    "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^24.0.1",
     "@types/react": "^19.1.8",

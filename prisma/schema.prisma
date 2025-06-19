@@ -14,10 +14,10 @@ model appuser {
   age                Int?
   user_type          String?       @db.VarChar(50)
   user_password      String        @db.VarChar(255)
-  preference_1       String?
-  preference_2       String?
-  preference_3       String?
-  weather_preference String?
+  preference_1       String?       @db.VarChar(255)
+  preference_2       String?       @db.VarChar(255)
+  preference_3       String?       @db.VarChar(255)
+  weather_preference String?       @db.VarChar(255)
   client             client?
   reservation        reservation[]
 }
@@ -32,7 +32,7 @@ model eventinfo {
   event_id           Int            @id @default(autoincrement())
   organizer_id       Int?
   event_name         String         @db.VarChar(100)
-  description        String?
+  description        String?        @db.VarChar(255)
   preference_1       String?
   preference_2       String?
   preference_3       String?
