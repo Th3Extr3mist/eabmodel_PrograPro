@@ -1,26 +1,18 @@
-services:
-  backend:
-    container_name: eabmodel-backend
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-    ports:
-      - "4000:4000"
-    env_file: .env
-    networks:
-      - app-network
+version: '3.9'
 
-  frontend:
-    container_name: eabmodel-frontend
+services:
+  webapp:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: sh -c "npx prisma generate && npm run build && npm start"
     environment:
-      - DATABASE_URL="postgresql://neondb_owner:npg_pcQSTN39FRio@ep-holy-scene-a5j0j49d-pooler.us-east-2.aws.neon.tech/eventosdb?sslmode=require"
-    networks:
-      - app-network
-
-networks:
-  app-network:
+      NODE_ENV: development
+    restart: unless-stopped

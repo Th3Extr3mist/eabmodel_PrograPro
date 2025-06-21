@@ -1,20 +1,28 @@
+# Dockerfile
+
 FROM node:20-alpine
 
+# Establece directorio de trabajo
 WORKDIR /app
 
-# Copiar archivos necesarios
-COPY package*.json tsconfig.json ./
+# Copia los archivos necesarios primero (para aprovechar cache)
+COPY package*.json ./
 COPY prisma ./prisma
-COPY app/backend ./app/backend
 
-# Instala dependencias y tipos
+# Instala dependencias
 RUN npm install
 
-# Compilar el backend TypeScript a JavaScript
-RUN npx tsc
+# Genera el cliente de Prisma
+RUN npx prisma generate
 
-# Expón el puerto
-EXPOSE 4000
+# Copia el resto del código
+COPY . .
 
-# Ejecuta el archivo transpilado (ajusta si tu tsconfig cambia ruta)
-CMD ["node", "/app/backend/index.js"]
+# Compila el proyecto de Next.js
+RUN npm run build
+
+# Expone el puerto de Next.js
+EXPOSE 3000
+
+# Inicia la app
+CMD ["npm", "start"]
