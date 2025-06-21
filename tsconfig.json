@@ -45,7 +45,7 @@
     ".next/types/**/*.ts",
     "api",
     "backend",
-    "components",
+    "components", "app/frontend/loginorga",
     
   ],
   "exclude": [
