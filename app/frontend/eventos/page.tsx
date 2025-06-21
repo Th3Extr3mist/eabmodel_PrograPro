@@ -6,7 +6,6 @@ import { create } from "zustand";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-import GoogleMaps from "../../components/GoogleMaps";
 
 interface EventStore {
   attending: Record<number, boolean>;
@@ -40,7 +39,7 @@ interface FullEvent {
   preference_1: string;
   preference_2: string;
   preference_3: string;
-  weather_preference: "soleado" | "lluvia" | "indiferente"; // ✅ corrección aquí
+  weather_preference: "soleado" | "lluvia" | "indiferente";
   image?: string;
 }
 
@@ -52,6 +51,7 @@ export default function EventList() {
   const [events, setEvents] = useState<FullEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentWeather, setCurrentWeather] = useState<"soleado" | "lluvia" | "indiferente">("indiferente");
+  const [userPreferences, setUserPreferences] = useState<string[]>([]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -83,13 +83,26 @@ export default function EventList() {
   }, []);
 
   useEffect(() => {
-    console.log("Intentando obtener el clima...");
+    fetch("/api/users/me")
+      .then((res) => {
+        if (!res.ok) throw new Error("No autenticado");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data.intereses)) {
+          setUserPreferences(data.intereses);
+        }
+      })
+      .catch((err) => {
+        console.error("Error al obtener preferencias:", err);
+      });
+  }, []);
+
+  useEffect(() => {
     fetch(`https://api.openweathermap.org/data/2.5/weather?q=Santiago,CL&appid=ec3b5c9883b52b8166d108472217ea8d&units=metric`)
       .then(res => res.json())
       .then(data => {
-        console.log("Datos del clima:", data);
         const weatherMain = data.weather[0].main.toLowerCase();
-
         if (weatherMain.includes("rain")) setCurrentWeather("lluvia");
         else if (weatherMain.includes("clear")) setCurrentWeather("soleado");
         else setCurrentWeather("indiferente");
@@ -98,29 +111,23 @@ export default function EventList() {
         console.error("Error al obtener el clima:", err);
         setCurrentWeather("indiferente");
       });
-    console.log("Clima actual definido como:", currentWeather);
   }, []);
 
   const eventsGeneral = events.slice(0, 5);
-  const eventsRecomen = events.slice(5, 15);
+
+  const eventsRecomen = events.filter((event) => {
+    const eventPrefs = [event.preference_1, event.preference_2, event.preference_3].filter(Boolean);
+    return eventPrefs.some((pref) => userPreferences.includes(pref));
+  }).slice(0, 5);
+
   const eventsweather = events
     .filter((e) => e.weather_preference === currentWeather || e.weather_preference === "indiferente")
     .slice(0, 5);
+
   const eventsclosecall = [...events]
     .filter(e => e.event_date)
     .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
     .slice(0, 5);
-
-  const mapEvents = events
-    .filter((e) => e.lat !== 0 && e.lng !== 0)
-    .map((e) => ({
-      id: e.event_id,
-      title: e.event_name,
-      description: e.description,
-      image: e.image || "",
-      lat: e.lat,
-      lng: e.lng,
-    }));
 
   const handleLogout = async () => {
     try {
