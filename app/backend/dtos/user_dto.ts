@@ -20,6 +20,16 @@ export class CreateUserDto {
 
     @IsOptional()
     hash?: string | null;
+
+    @IsOptional()
+    preference_1? :string;
+    
+    @IsOptional()
+    preference_2? :string;
+
+    @IsOptional()
+    preference_3? :string;
+    
   }
 export class UpdateUserDto {
     @IsOptional()
@@ -37,6 +47,18 @@ export class UpdateUserDto {
     @IsOptional()
     @IsInt()
     age?: number;
+
+    @IsOptional()
+    @IsString()
+    preference_1? :string;
+
+    @IsOptional()
+    @IsString()
+    preference_2? :string;
+
+    @IsOptional()
+    @IsString()
+    preference_3? :string;
   }
 
 @Expose()
@@ -45,4 +67,7 @@ export class UserResponseDto {
   email: string;
   user_name: string;
   age?: number;
+  preference_1?: string;
+  preference_2?: string;
+  preference_3?: string;
 }

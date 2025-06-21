@@ -18,7 +18,7 @@ export class EventController {
       const dtoRaw: Record<string, any> = {};
 
       // Campos de tipo string
-      const strFields = ["event_name", "event_date", "description", "start_time", "end_time"];
+      const strFields = ["event_name", "event_date", "description","preference_1","preference_2","preference_3","weather_preference", "start_time", "end_time"];
       // Campos de tipo entero
       const intFields = ["organizer_id", "location_id", "availability"];
       // Campos de tipo flotante
@@ -30,16 +30,20 @@ export class EventController {
         dtoRaw[field] = typeof val === "string" ? val : "";
       }
 
-      // Parseo de campos enteros
+      // Parseo de campos enteros (solo si están presentes)
       for (const field of intFields) {
         const val = formData.get(field);
-        dtoRaw[field] = val !== null ? parseInt(val.toString(), 10) : null;
+        if (val !== null && val !== "") {
+          dtoRaw[field] = parseInt(val.toString(), 10);
+        }
       }
 
-      // Parseo de campos flotantes
+      // Parseo de campos flotantes (solo si están presentes)
       for (const field of floatFields) {
         const val = formData.get(field);
-        dtoRaw[field] = val !== null ? parseFloat(val.toString()) : null;
+        if (val !== null && val !== "") {
+          dtoRaw[field] = parseFloat(val.toString());
+        }
       }
 
       // Procesar imagen si existe
@@ -53,6 +57,13 @@ export class EventController {
         const filepath = path.join(uploadsDir, filename);
         await fs.promises.writeFile(filepath, buffer);
         dtoRaw.image = `/uploads/${filename}`;
+      }
+
+      // Validación de campos obligatorios manuales
+      if (!dtoRaw.organizer_id || !dtoRaw.location_id) {
+        return NextResponse.json({
+          message: "organizer_id y location_id son requeridos"
+        }, { status: 400 });
       }
 
       // Validación del DTO
@@ -97,7 +108,6 @@ export class EventController {
 
   /** GET /api/events/:id */
   static async getById(idStr: string) {
-    console.log("[DEBUG] getById recibido con idStr =", idStr);
     if (!isIntString(idStr)) {
       return NextResponse.json({ message: "ID inválido" }, { status: 400 });
     }

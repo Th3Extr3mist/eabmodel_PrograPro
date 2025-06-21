@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 
 interface User {
-  nombre: string;
+  user_name: string;
   email: string;
-  biografia: string;
-  intereses: string[];
+  preference_1?: string;
+  preference_2?: string;
+  preference_3?: string;
 }
 
 export default function ProfilePage() {
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Cerrar el menú lateral si se hace clic fuera de él
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
@@ -33,29 +35,41 @@ export default function ProfilePage() {
     };
   }, [isSidebarOpen]);
 
+  // Obtener el usuario al cargar la página (con cookies HTTP-only)
   useEffect(() => {
-    fetch("/api/user")
+    fetch("/api/users/me", {
+      credentials: "include", // <-- importante para enviar cookies
+    })
       .then((res) => {
-        if (!res.ok) throw new Error("No autenticado");
+        if (!res.ok) throw new Error("Error al obtener usuario");
         return res.json();
       })
       .then((data) => {
-        setUser(data);
+        // Adaptar datos al formato esperado
+        setUser({
+          user_name: data.nombre,
+          email: data.email,
+          preference_1: data.intereses[0],
+          preference_2: data.intereses[1],
+          preference_3: data.intereses[2],
+        });
       })
       .catch((err) => {
         console.error(err);
-        setError("Error al cargar usuario");
+        setError("Usuario no autenticado");
       });
   }, []);
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/logout", { method: "POST" });
-      router.push("/login");
+      await fetch("/api/logout", { method: "POST", credentials: "include" });
+      router.push("/frontend/login");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
     }
   };
+
+  const intereses = [user?.preference_1, user?.preference_2, user?.preference_3].filter(Boolean);
 
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">
@@ -82,46 +96,39 @@ export default function ProfilePage() {
             ×
           </button>
           <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
-            <button onClick={() => { router.push("/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
-            <button onClick={() => { router.push("/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
-            <button onClick={() => { router.push("/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
+            <button onClick={() => { router.push("/frontend/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
+            <button onClick={() => { router.push("/frontend/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
+            <button onClick={() => { router.push("/frontend/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
+            <button onClick={() => { router.push("/frontend/organize"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Organizar Evento</button>
             <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className="mt-4 text-red-600 hover:text-red-800 font-semibold">Cerrar Sesión</button>
           </nav>
         </div>
       </nav>
-      <h1 className="w-full text-xl font-bold mt-6 mb-6 text-gray-800"></h1>
+
+      <h1 className="w-full text-xl font-bold mt-6 mb-6 text-gray-800">Bienvenido</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex items-center space-x-4">
-            <Image
-            src="/images/avatar-placeholder.png"
-            alt="Foto de perfil"
-            width={80}
-            height={80}
-            className="rounded-full object-cover"
-            />
-            <div>
-            <h2 className="text-2xl font-semibold text-gray-800">{user?.nombre ?? "Cargando..."}</h2>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-800">{user?.user_name ?? "Cargando..."}</h2>
             <p className="text-gray-600">{user?.email ?? ""}</p>
-            </div>
+          </div>
         </div>
-        <div className="mt-6">
-            <h3 className="text-lg font-medium text-gray-700 mb-2">Biografía</h3>
-            <p className="text-gray-600">
-                {user?.biografia ?? "Sin biografía disponible"}
-            </p>
-            </div>
 
-            <div className="mt-4">
-            <h3 className="text-lg font-medium text-gray-700 mb-2">Intereses</h3>
-            <ul className="list-disc list-inside text-gray-600">
-                {(user?.intereses ?? []).map((interes, idx) => (
+        <div className="mt-6">
+          <h3 className="text-lg font-medium text-gray-700 mb-2">Intereses</h3>
+          <ul className="list-disc list-inside text-gray-600">
+            {intereses.length === 0 ? (
+              <li>No hay intereses definidos.</li>
+            ) : (
+              intereses.map((interes, idx) => (
                 <li key={idx}>{interes}</li>
-                ))}
-            </ul>
-            </div>
+              ))
+            )}
+          </ul>
         </div>
+      </div>
     </div>
   );
 }

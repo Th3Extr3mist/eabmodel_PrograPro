@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -9,6 +9,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+
+  // 🔴 Al montar, limpiar cualquier token previo
+  useEffect(() => {
+    localStorage.removeItem("token");
+    document.cookie = "authToken=; Max-Age=0; path=/";
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,17 +28,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (res.ok) {
-        const authCheck = await fetch("/api/auth/check");
-        if (authCheck.ok) {
-          router.push("/eventos");
-          router.refresh();
-        } else {
-          setError("Error al establecer la sesión");
-        }
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Error al iniciar sesión");
       } else {
-        const error = await res.json();
-        setError(error.error || "Error al iniciar sesión");
+        // 🔴 Guardar token tras login exitoso
+        if (data.token) localStorage.setItem("token", data.token);
+        router.push("/frontend/eventos");
       }
     } catch {
       setError("Error de conexión");
@@ -47,13 +49,13 @@ export default function LoginPage() {
         <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
         <div>
           <button
-            onClick={() => router.push("/register")}
+            onClick={() => router.push("/frontend/register")}
             className="bg-blue-500 text-white px-4 py-1 rounded mx-2 hover:bg-blue-600"
           >
             Registrarse
           </button>
           <button
-            onClick={() => router.push("/organize")}
+            onClick={() => router.push("/frontend/organize")}
             className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
           >
             Organizador
