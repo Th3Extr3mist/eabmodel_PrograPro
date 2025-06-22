@@ -11,7 +11,7 @@ interface Params {
 export default async function EventByIdPage({ params }: Params) {
   const resolvedParams = await params; 
   const id = resolvedParams.id;
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/events/${id}`, {
+  const res = await fetch(`https://eabmodel-progra-pro-th3extr3mists-projects.vercel.app/api/events/${id}`, {
   cache: 'no-store',
 });
 
