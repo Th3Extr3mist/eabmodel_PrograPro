@@ -55,7 +55,7 @@ export default function LoginPage() {
             Registrarse
           </button>
           <button
-            onClick={() => router.push("/frontend/organize")}
+            onClick={() => router.push("/frontend/loginorga")}
             className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
           >
             Organizador

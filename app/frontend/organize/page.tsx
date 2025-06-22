@@ -125,7 +125,7 @@ export default function OrganizePage() {
     } else {
       setSuccess('Evento creado correctamente');
       alert('¡Evento creado correctamente!');
-      setTimeout(() => router.push('/frontend/eventos'), 2000);
+      setTimeout(() => router.push('/frontend/profileorga'), 2000);
     }
   };
 
