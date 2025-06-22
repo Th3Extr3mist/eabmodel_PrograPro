@@ -11,7 +11,7 @@ interface Params {
 export default async function EventByIdPage({ params }: Params) {
   const resolvedParams = await params; 
   const id = resolvedParams.id;
-  const res = await fetch(`api/events/${id}`, { cache: 'no-store' });
+  const res = await fetch(`api/events/[id]`, { cache: 'no-store' });
 
   if (res.status === 404) return notFound();
   if (!res.ok) throw new Error(`Error al solicitar el evento ${id}: ${res.status}`);
