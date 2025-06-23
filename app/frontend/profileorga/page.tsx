@@ -32,30 +32,32 @@ export default function OrganizerProfilePage() {
   }, []);
 
   const handleDelete = async (event_id: number) => {
-    const confirm = window.confirm("¿Estás seguro de que deseas eliminar este evento?");
-    if (!confirm) return;
+  const confirm = window.confirm("¿Estás seguro de que deseas eliminar este evento?");
+  if (!confirm) return;
 
-    try {
-      const res = await fetch("/api/delete-event", {
-        method: "DELETE",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ event_id }),
-      });
+  try {
+    const res = await fetch(`/api/events/${event_id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+    });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        setError(data.error || "No se pudo eliminar el evento");
-        return;
-      }
-
+    if (res.status === 204) {
       setEvents(events.filter((ev) => ev.event_id !== event_id));
-    } catch (err) {
-      console.error("Error al eliminar:", err);
-      setError("Hubo un error al eliminar el evento");
+      return;
     }
-  };
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      setError(data.error || "No se pudo eliminar el evento");
+      return;
+    }
+
+    setEvents(events.filter((ev) => ev.event_id !== event_id));
+  } catch (err) {
+    console.error("Error al eliminar:", err);
+    setError("Hubo un error al eliminar el evento");
+  }
+};
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -65,6 +67,10 @@ export default function OrganizerProfilePage() {
 
   const handleCreateEvent = () => {
     router.push("/frontend/organize");
+  };
+
+  const handleUpdate = (event_id: number) => {
+    router.push(`/frontend/edit_event/${event_id}`);
   };
 
   return (
@@ -98,12 +104,20 @@ export default function OrganizerProfilePage() {
               <h2 className="text-lg font-semibold">{event.event_name}</h2>
               <p className="text-sm text-gray-600">{event.description}</p>
               <p className="text-sm text-gray-500">Fecha: {event.event_date}</p>
-              <button
-                onClick={() => handleDelete(event.event_id)}
-                className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-              >
-                Eliminar
-              </button>
+              <div className="mt-2 space-x-2">
+                <button
+                  onClick={() => handleUpdate(event.event_id)}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
+                >
+                  Actualizar
+                </button>
+                <button
+                  onClick={() => handleDelete(event.event_id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                >
+                  Eliminar
+                </button>
+              </div>
             </li>
           ))}
         </ul>
