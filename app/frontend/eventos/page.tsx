@@ -12,7 +12,7 @@ export default function EventList() {
   const [events, setEvents] = useState<FullEvent[]>([]);
   const [reservations, setReservations] = useState<number[]>([]);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
-  const [clearSkyEvents, setClearSkyEvents] = useState<number[]>([]); // IDs con clima despejado
+  const [eventosDespejados, setEventosDespejados] = useState<FullEvent[]>([]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -26,54 +26,61 @@ export default function EventList() {
   };
 
   useEffect(() => {
-    const fetchAll = async () => {
-      const [eventRes, reservationRes, userRes] = await Promise.all([
-        fetch("/api/events"),
-        fetch("/api/reservations"),
-        fetch("/api/users/me"),
-      ]);
+    fetch("/api/events")
+      .then((res) => res.json())
+      .then((data) => setEvents(data));
 
-      const eventData: FullEvent[] = await eventRes.json();
-      const reservationData = await reservationRes.json();
-      const userData = await userRes.json();
+    fetch("/api/reservations")
+      .then((res) => res.json())
+      .then((data) => setReservations(data.map((r: any) => r.event_id)));
 
-      setEvents(eventData);
-      setReservations(reservationData.map((r: any) => r.event_id));
-      setUserPreferences(userData.intereses || []);
+    fetch("/api/users/me")
+      .then((res) => res.json())
+      .then((data) => setUserPreferences(data.intereses || []));
+  }, []);
 
-      // Buscar eventos con clima despejado (clear sky)
-      const clearEvents: number[] = [];
+  useEffect(() => {
+    async function fetchClearSkyEvents() {
       const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+      if (!apiKey) return;
 
-      for (const ev of eventData) {
-        const lat = ev.lat;
-        const lon = ev.lng;
-        const startDate = new Date(`${ev.event_date}T${ev.start_time}`);
-        const ts = Math.floor(startDate.getTime() / 1000);
+      const clearSkyEvents: FullEvent[] = [];
 
+      for (const event of events.filter((e) => !reservations.includes(e.event_id))) {
         try {
-          const res = await fetch(
-            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+          const eventDate = new Date(event.event_date);
+          const [h, m, s] = event.start_time.split(":").map(Number);
+          eventDate.setHours(h, m, s || 0);
+
+          // Convertir a zona horaria chilena
+          const localDate = new Date(
+            eventDate.toLocaleString("en-US", { timeZone: "America/Santiago" })
           );
+
+          const timestamp = Math.floor(localDate.getTime() / 1000);
+
+          const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${event.lat}&lon=${event.lng}&appid=${apiKey}&units=metric`;
+          const res = await fetch(url);
           const data = await res.json();
 
           const closest = data.list.reduce((prev: any, curr: any) =>
-            Math.abs(curr.dt - ts) < Math.abs(prev.dt - ts) ? curr : prev
+            Math.abs(curr.dt - timestamp) < Math.abs(prev.dt - timestamp) ? curr : prev
           );
 
-          if (closest.weather?.[0]?.description === "clear sky") {
-            clearEvents.push(ev.event_id);
+          const description = closest.weather?.[0]?.description;
+          if (description === "clear sky") {
+            clearSkyEvents.push(event);
           }
         } catch (e) {
-          console.error("Error obteniendo clima:", e);
+          console.error("Error obteniendo clima para evento", event.event_id, e);
         }
       }
 
-      setClearSkyEvents(clearEvents);
-    };
+      setEventosDespejados(clearSkyEvents);
+    }
 
-    fetchAll();
-  }, []);
+    fetchClearSkyEvents();
+  }, [events, reservations]);
 
   const handleLogout = async () => {
     try {
@@ -96,16 +103,15 @@ export default function EventList() {
   };
 
   const filteredEvents = events.filter((e) => !reservations.includes(e.event_id));
-  const clearSkyFilteredEvents = filteredEvents.filter((e) => clearSkyEvents.includes(e.event_id));
 
   const sections = {
-    "Eventos Generales": events, // mostrar todos
+    "Eventos Generales": filteredEvents, // sin filtro, todos
     "Eventos Recomendados": filteredEvents
       .filter((e) =>
         [e.preference_1, e.preference_2, e.preference_3].some((p) => userPreferences.includes(p))
       )
       .slice(0, 5),
-    "Eventos con Clima Despejado": clearSkyFilteredEvents.slice(0, 5),
+    "Eventos con Clima Despejado": eventosDespejados,
     "Eventos Próximos": [...filteredEvents]
       .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
       .slice(0, 5),
@@ -136,11 +142,51 @@ export default function EventList() {
             ×
           </button>
           <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
-            <button onClick={() => { router.push("/frontend/eventos"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos</button>
-            <button onClick={() => { router.push("/frontend/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
-            <button onClick={() => { router.push("/frontend/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
-            <button onClick={() => { router.push("/frontend/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
-            <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className="mt-4 text-red-600 hover:text-red-800 font-semibold">Cerrar Sesión</button>
+            <button
+              onClick={() => {
+                router.push("/frontend/eventos");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Eventos
+            </button>
+            <button
+              onClick={() => {
+                router.push("/frontend/profile");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Perfil
+            </button>
+            <button
+              onClick={() => {
+                router.push("/frontend/save-events");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Eventos Guardados
+            </button>
+            <button
+              onClick={() => {
+                router.push("/frontend/my-plans");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Mis Planes
+            </button>
+            <button
+              onClick={() => {
+                handleLogout();
+                setIsSidebarOpen(false);
+              }}
+              className="mt-4 text-red-600 hover:text-red-800 font-semibold"
+            >
+              Cerrar Sesión
+            </button>
           </nav>
         </div>
       </nav>
@@ -156,7 +202,7 @@ export default function EventList() {
                 <EventCard
                   key={event.event_id}
                   event={event}
-                  attending={reservations.includes(event.event_id)}
+                  attending={false}
                   onToggleAttendance={handleToggleAttendance}
                 />
               ))}
