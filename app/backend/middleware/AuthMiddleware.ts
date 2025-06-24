@@ -3,8 +3,11 @@ import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET_KEY || "your-secret-key";
 
-export function getUserFromToken(req: NextRequest) {
-  // 🔑 Buscar token en la cookie 'authToken'
+interface TokenPayload {
+  user_id: string;
+}
+
+export function getUserFromToken(req: NextRequest): TokenPayload {
   const token = req.cookies.get("authToken")?.value;
 
   if (!token) {
@@ -12,7 +15,12 @@ export function getUserFromToken(req: NextRequest) {
   }
 
   try {
-    const decoded = jwt.verify(token, SECRET_KEY);
+    const decoded = jwt.verify(token, SECRET_KEY) as TokenPayload;
+
+    if (!decoded.user_id) {
+      throw new Error("Invalid token payload");
+    }
+
     return decoded;
   } catch (err) {
     throw new Error("Invalid token");
