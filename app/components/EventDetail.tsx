@@ -35,7 +35,10 @@ export default function EventDetail({
   availability,
   eventlocation,
 }: EventDetailProps) {
-  const fechaStr = new Date(event_date).toLocaleDateString();
+  // Solo cambiamos la forma de parsear la fecha, la hora queda igual
+  const [y, m, d] = event_date.split("T")[0].split("-").map(Number);
+  const fechaStr = new Date(y, m - 1, d).toLocaleDateString();
+
   const horaInicio = new Date(start_time).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
@@ -67,7 +70,7 @@ export default function EventDetail({
       {eventlocation && (
         <p className="text-gray-600 mb-4">
           <span className="font-medium">Ubicación:</span> {eventlocation.name ?? ""}{" "}
-          {eventlocation.address ?? ""} ({lat}, {lng})
+          {eventlocation.address ?? ""}
         </p>
       )}
 
@@ -86,3 +89,4 @@ export default function EventDetail({
     </article>
   );
 }
+

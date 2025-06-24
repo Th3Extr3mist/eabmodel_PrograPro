@@ -18,7 +18,7 @@ export class EventController {
       const dtoRaw: Record<string, any> = {};
 
       // Campos de tipo string
-      const strFields = ["event_name", "event_date", "description","preference_1","preference_2","preference_3","weather_preference", "start_time", "end_time"];
+      const strFields = ["event_name", "event_date", "description", "preference_1", "preference_2", "preference_3", "weather_preference", "start_time", "end_time"];
       // Campos de tipo entero
       const intFields = ["organizer_id", "location_id", "availability"];
       // Campos de tipo flotante
@@ -130,8 +130,60 @@ export class EventController {
       return NextResponse.json({ message: "ID inválido" }, { status: 400 });
     }
     try {
-      const body = await req.json();
-      const dto = plainToInstance(UpdateEventDto, body);
+      const formData = await req.formData();
+      const dtoRaw: Record<string, any> = {};
+
+      // Campos de tipo string
+      const strFields = ["event_name", "event_date", "description", "preference_1", "preference_2", "preference_3", "weather_preference", "start_time", "end_time"];
+      // Campos de tipo entero
+      const intFields = ["organizer_id", "location_id", "availability"];
+      // Campos de tipo flotante
+      const floatFields = ["price", "lat", "lng"];
+
+      // Parseo de campos string
+      for (const field of strFields) {
+        const val = formData.get(field);
+        dtoRaw[field] = typeof val === "string" ? val : "";
+      }
+
+      // Parseo de campos enteros (solo si están presentes)
+      for (const field of intFields) {
+        const val = formData.get(field);
+        if (val !== null && val !== "") {
+          dtoRaw[field] = parseInt(val.toString(), 10);
+        }
+      }
+
+      // Parseo de campos flotantes (solo si están presentes)
+      for (const field of floatFields) {
+        const val = formData.get(field);
+        if (val !== null && val !== "") {
+          dtoRaw[field] = parseFloat(val.toString());
+        }
+      }
+
+      // Procesar imagen si existe
+      const file = formData.get("image");
+      if (file && typeof (file as any).arrayBuffer === "function") {
+        const imageFile = file as File;
+        const buffer = Buffer.from(await imageFile.arrayBuffer());
+        const uploadsDir = path.join(process.cwd(), "public", "uploads");
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+        const filename = `${Date.now()}-${imageFile.name}`;
+        const filepath = path.join(uploadsDir, filename);
+        await fs.promises.writeFile(filepath, buffer);
+        dtoRaw.image = `/uploads/${filename}`;
+      }
+
+      // Validación de campos obligatorios manuales
+      if (!dtoRaw.organizer_id || !dtoRaw.location_id) {
+        return NextResponse.json({
+          message: "organizer_id y location_id son requeridos"
+        }, { status: 400 });
+      }
+
+      // Validación del DTO
+      const dto = plainToInstance(UpdateEventDto, dtoRaw);
       const errors = await validate(dto);
       if (errors.length) {
         const msgs = errors.map((e) => ({
@@ -140,6 +192,7 @@ export class EventController {
         }));
         return NextResponse.json({ message: "Validación fallida", errors: msgs }, { status: 400 });
       }
+
       const idNum = +idStr;
       const ev = await EventService.update(idNum, dto);
       return NextResponse.json(ev);

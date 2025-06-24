@@ -154,7 +154,7 @@ export default function EventList() {
             >
               {event.image && (
                 <Image
-                  src={event.image}
+                  src={`/uploads/${event.image}`}
                   alt={event.event_name}
                   width={350}
                   height={400}
