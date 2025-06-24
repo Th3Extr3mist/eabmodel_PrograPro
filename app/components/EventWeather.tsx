@@ -5,14 +5,10 @@ import React, { useEffect, useState } from 'react';
 interface EventWeatherProps {
   lat: number;
   lng: number;
-  startTimestamp: number; // Timestamp del inicio del evento
+  startTimestamp: number;
 }
 
-export default function EventWeather({
-  lat,
-  lng,
-  startTimestamp,
-}: EventWeatherProps) {
+export default function EventWeather({ lat, lng, startTimestamp }: EventWeatherProps) {
   const [weatherData, setWeatherData] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,9 +23,8 @@ export default function EventWeather({
           return;
         }
 
-        const url = `https://api.openweathermap.org/data/2.5/forecast`;
         const response = await fetch(
-          `${url}?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
+          `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
         );
         const data = await response.json();
 
@@ -39,12 +34,9 @@ export default function EventWeather({
           return;
         }
 
-        // Buscar el bloque horario más cercano al timestamp del evento
-        const closest = data.list.reduce((prev: any, curr: any) => {
-          return Math.abs(curr.dt - startTimestamp) < Math.abs(prev.dt - startTimestamp)
-            ? curr
-            : prev;
-        });
+        const closest = data.list.reduce((prev: any, curr: any) =>
+          Math.abs(curr.dt - startTimestamp) < Math.abs(prev.dt - startTimestamp) ? curr : prev
+        );
 
         setWeatherData(closest);
       } catch (err) {
@@ -56,21 +48,8 @@ export default function EventWeather({
     fetchWeather();
   }, [startTimestamp, lat, lng]);
 
-  if (error) {
-    return (
-      <div className="text-center text-red-600">
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (!weatherData) {
-    return (
-      <div className="text-center">
-        <p>Cargando datos del clima...</p>
-      </div>
-    );
-  }
+  if (error) return <div className="text-center text-red-600"><p>{error}</p></div>;
+  if (!weatherData) return <div className="text-center"><p>Cargando datos del clima...</p></div>;
 
   const temperature = weatherData.main?.temp ?? '--';
   const humidity = weatherData.main?.humidity ?? '--';
@@ -78,7 +57,11 @@ export default function EventWeather({
   const weatherIcon = weatherData.weather?.[0]?.icon;
   const iconUrl = weatherIcon ? `https://openweathermap.org/img/wn/${weatherIcon}@2x.png` : '';
 
-  const forecastTime = new Date(weatherData.dt * 1000).toLocaleString();
+  const forecastTime = new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Santiago",
+  }).format(new Date(weatherData.dt * 1000));
 
   return (
     <div>

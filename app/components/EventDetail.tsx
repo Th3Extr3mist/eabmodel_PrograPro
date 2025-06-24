@@ -1,19 +1,17 @@
-// /app/components/EventDetail.tsx
 import React from "react";
 
 export interface EventDetailProps {
   event_id: number;
   event_name: string;
   description: string;
-  event_date: string;     
-  start_time: string;      
+  event_date: string;
+  start_time: string;
   end_time: string;
   lat: number;
   lng: number;
   image?: string | null;
-  price: string;        
+  price: string;
   availability?: number | null;
-  
   eventlocation?: {
     location_id: number;
     name?: string;
@@ -22,30 +20,34 @@ export interface EventDetailProps {
 }
 
 export default function EventDetail({
-  event_id,
   event_name,
   description,
   event_date,
   start_time,
   end_time,
-  lat,
-  lng,
   image,
   price,
   availability,
   eventlocation,
 }: EventDetailProps) {
-  const [y, m, d] = event_date.split("T")[0].split("-").map(Number);
-  const fechaStr = new Date(y, m - 1, d).toLocaleDateString();
+  const fechaStr = new Intl.DateTimeFormat("es-CL", {
+    dateStyle: "long",
+    timeZone: "America/Santiago",
+  }).format(new Date(event_date));
 
-  const horaInicio = new Date(start_time).toLocaleTimeString([], {
+  const horaInicio = new Intl.DateTimeFormat("es-CL", {
     hour: "2-digit",
     minute: "2-digit",
-  });
-  const horaFin = new Date(end_time).toLocaleTimeString([], {
+    hour12: true,
+    timeZone: "America/Santiago",
+  }).format(new Date(start_time));
+
+  const horaFin = new Intl.DateTimeFormat("es-CL", {
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: true,
+    timeZone: "America/Santiago",
+  }).format(new Date(end_time));
 
   const isBase64Image = image && image.startsWith("data:image");
 
@@ -64,7 +66,6 @@ export default function EventDetail({
       )}
 
       <h1 className="text-3xl font-semibold mb-2 text-gray-800">{event_name}</h1>
-
       <p className="text-gray-600 mb-1">
         <span className="font-medium">Fecha:</span> {fechaStr}
       </p>

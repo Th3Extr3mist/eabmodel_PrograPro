@@ -23,28 +23,17 @@ export default function EventByIdPage() {
       .then((data: EventDetailProps) => {
         setEventData(data);
 
-        // Depuración de la fecha y hora
-        const dateStr = data.event_date.split('T')[0]; // "YYYY-MM-DD"
-        const timeStr = data.start_time.split('T')[1] || data.start_time; // "HH:mm" o "HH:mm:ss"
-        
-        console.log(`Fecha y hora del evento: ${dateStr} ${timeStr}`);
+        const dateStr = data.event_date.split('T')[0];
+        const timeStr = data.start_time.split('T')[1] || data.start_time;
 
-        // Separar la fecha y la hora
         const [year, month, day] = dateStr.split('-').map(Number);
         const [hour, minute] = timeStr.split(':').map(Number);
 
-        // Verificar si el mes, día, hora y minuto son válidos
-        if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hour) || isNaN(minute)) {
-          console.error("Fecha u hora inválida para el evento");
-          setError('Fecha u hora inválida para el evento');
-          return;
-        }
+        const chileDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
+        // Ajustar a zona horaria chilena si fuera necesario
+        chileDate.setHours(chileDate.getHours() - 4);
 
-        console.log(`Fecha válida: ${year}-${month}-${day} ${hour}:${minute}`);
-
-        // Crear un objeto Date a partir de los componentes
-        const dateObj = new Date(Date.UTC(year, month - 1, day, hour, minute));
-        const ts = Math.floor(dateObj.getTime() / 1000);
+        const ts = Math.floor(chileDate.getTime() / 1000);
 
         if (!isNaN(ts)) {
           setStartTimestamp(ts);
@@ -74,9 +63,17 @@ export default function EventByIdPage() {
     );
   }
 
-  // Construir los datos para mostrar en el clima
-  const dateStr = eventData.event_date.split('T')[0];
-  const humanDateTime = `${dateStr} ${eventData.start_time}`;
+  const dateStr = new Date(eventData.event_date).toLocaleDateString("es-CL", {
+    timeZone: "America/Santiago",
+  });
+  const timeStr = new Date(eventData.start_time).toLocaleTimeString("es-CL", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "America/Santiago",
+  });
+
+  const humanDateTime = `${dateStr} ${timeStr}`;
 
   const mapEvent = {
     id: eventData.event_id,
@@ -90,12 +87,10 @@ export default function EventByIdPage() {
   return (
     <main className="px-4 py-8 bg-gray-100 min-h-screen flex flex-col items-center space-y-8">
       <section className="w-full max-w-5xl flex flex-col lg:flex-row gap-6">
-        {/* Detalle del evento */}
         <div className="w-full bg-white rounded-lg shadow p-6">
           <EventDetail {...eventData} />
         </div>
 
-        {/* Clima */}
         <div className="w-full lg:w-64 bg-white rounded-lg shadow p-4 h-fit">
           <h3 className="font-semibold text-lg mb-2">Clima</h3>
           <p className="text-sm mb-4 text-gray-800">{humanDateTime}</p>
@@ -111,7 +106,6 @@ export default function EventByIdPage() {
         </div>
       </section>
 
-      {/* Mapa */}
       <section className="w-full max-w-5xl">
         <div className="w-full rounded-lg shadow overflow-hidden h-[400px] sm:h-[500px] md:h-[600px]">
           <EventMapClient events={[mapEvent]} />
