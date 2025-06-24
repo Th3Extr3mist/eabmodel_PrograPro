@@ -1,3 +1,4 @@
+// components/EventDetail.tsx
 import React from "react";
 
 export interface EventDetailProps {
@@ -30,35 +31,30 @@ export default function EventDetail({
   availability,
   eventlocation,
 }: EventDetailProps) {
-  const fechaStr = new Intl.DateTimeFormat("es-CL", {
-    dateStyle: "long",
+  const fechaStr = new Date(event_date).toLocaleDateString("es-CL", {
     timeZone: "America/Santiago",
-  }).format(new Date(event_date));
+  });
 
-  const horaInicio = new Intl.DateTimeFormat("es-CL", {
+  const horaInicio = new Date(start_time).toLocaleTimeString("es-CL", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
     timeZone: "America/Santiago",
-  }).format(new Date(start_time));
+  });
 
-  const horaFin = new Intl.DateTimeFormat("es-CL", {
+  const horaFin = new Date(end_time).toLocaleTimeString("es-CL", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: true,
     timeZone: "America/Santiago",
-  }).format(new Date(end_time));
+  });
 
   const isBase64Image = image && image.startsWith("data:image");
 
   return (
     <article className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
       {isBase64Image ? (
-        <img
-          src={image!}
-          alt={`Imagen del evento: ${event_name}`}
-          className="w-full h-64 object-cover rounded-md mb-4"
-        />
+        <img src={image!} alt={`Imagen del evento: ${event_name}`} className="w-full h-64 object-cover rounded-md mb-4" />
       ) : (
         <div className="w-full h-64 bg-gray-200 rounded-md mb-4 flex items-center justify-center text-gray-500">
           Imagen no disponible
@@ -66,6 +62,7 @@ export default function EventDetail({
       )}
 
       <h1 className="text-3xl font-semibold mb-2 text-gray-800">{event_name}</h1>
+
       <p className="text-gray-600 mb-1">
         <span className="font-medium">Fecha:</span> {fechaStr}
       </p>
@@ -75,8 +72,7 @@ export default function EventDetail({
 
       {eventlocation && (
         <p className="text-gray-600 mb-4">
-          <span className="font-medium">Ubicación:</span> {eventlocation.name ?? ""}{" "}
-          {eventlocation.address ?? ""}
+          <span className="font-medium">Ubicación:</span> {eventlocation.name ?? ""} {eventlocation.address ?? ""}
         </p>
       )}
 

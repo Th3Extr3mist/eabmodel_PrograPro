@@ -1,3 +1,4 @@
+// components/EventWeather.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -34,9 +35,11 @@ export default function EventWeather({ lat, lng, startTimestamp }: EventWeatherP
           return;
         }
 
-        const closest = data.list.reduce((prev: any, curr: any) =>
-          Math.abs(curr.dt - startTimestamp) < Math.abs(prev.dt - startTimestamp) ? curr : prev
-        );
+        const closest = data.list.reduce((prev: any, curr: any) => {
+          return Math.abs(curr.dt - startTimestamp) < Math.abs(prev.dt - startTimestamp)
+            ? curr
+            : prev;
+        });
 
         setWeatherData(closest);
       } catch (err) {
@@ -57,21 +60,17 @@ export default function EventWeather({ lat, lng, startTimestamp }: EventWeatherP
   const weatherIcon = weatherData.weather?.[0]?.icon;
   const iconUrl = weatherIcon ? `https://openweathermap.org/img/wn/${weatherIcon}@2x.png` : '';
 
-  const forecastTime = new Intl.DateTimeFormat("es-CL", {
-    dateStyle: "medium",
-    timeStyle: "short",
+  const forecastTime = new Date(weatherData.dt * 1000).toLocaleString("es-CL", {
     timeZone: "America/Santiago",
-  }).format(new Date(weatherData.dt * 1000));
+  });
 
   return (
-    <div>
-      <div className="text-center mb-4">
-        {iconUrl && <img src={iconUrl} alt="Weather icon" className="w-16 h-16 mx-auto" />}
-        <h4 className="text-xl font-semibold">{weatherDescription}</h4>
-        <p className="text-lg">Temp: {temperature}°C</p>
-        <p className="text-lg">Humedad: {humidity}%</p>
-        <p className="text-sm text-gray-500">Pronóstico para: {forecastTime}</p>
-      </div>
+    <div className="text-center mb-4">
+      {iconUrl && <img src={iconUrl} alt="Weather icon" className="w-16 h-16 mx-auto" />}
+      <h4 className="text-xl font-semibold">{weatherDescription}</h4>
+      <p className="text-lg">Temp: {temperature}°C</p>
+      <p className="text-lg">Humedad: {humidity}%</p>
+      <p className="text-sm text-gray-500">Pronóstico para: {forecastTime}</p>
     </div>
   );
 }
