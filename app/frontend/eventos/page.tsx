@@ -1,133 +1,86 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
-import { create } from "zustand";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
-
-interface EventStore {
-  attending: Record<number, boolean>;
-  toggleAttendance: (id: number) => void;
-}
-
-const useEventStore = create<EventStore>((set) => ({
-  attending: {},
-  toggleAttendance: (id) =>
-    set((state) => ({
-      attending: {
-        ...state.attending,
-        [id]: !state.attending[id],
-      },
-    })),
-}));
-
-interface FullEvent {
-  event_id: number;
-  event_name: string;
-  event_date: string;
-  description: string;
-  start_time: string;
-  end_time: string;
-  organizer_id: number;
-  location_id: number;
-  price: string;
-  availability: string;
-  lat: number;
-  lng: number;
-  preference_1: string;
-  preference_2: string;
-  preference_3: string;
-  weather_preference: "soleado" | "lluvia" | "indiferente";
-  image?: string;
-}
+import EventCard, { FullEvent } from "../../components/EventCard";
 
 export default function EventList() {
-  const { attending, toggleAttendance } = useEventStore();
   const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const [events, setEvents] = useState<FullEvent[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [currentWeather, setCurrentWeather] = useState<"soleado" | "lluvia" | "indiferente">("indiferente");
+  const [reservations, setReservations] = useState<number[]>([]);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
+  const [eventosDespejados, setEventosDespejados] = useState<FullEvent[]>([]);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
-        setIsSidebarOpen(false);
-      }
-    }
-
-    if (isSidebarOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSidebarOpen]);
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   useEffect(() => {
     fetch("/api/events")
-      .then((res) => {
-        if (!res.ok) throw new Error("No se pudieron cargar los eventos");
-        return res.json();
-      })
-      .then((data: FullEvent[]) => setEvents(data))
-      .catch((err) => {
-        console.error(err);
-        setError("Error al cargar eventos");
-      });
-  }, []);
+      .then((res) => res.json())
+      .then((data) => setEvents(data));
 
-  useEffect(() => {
+    fetch("/api/reservations")
+      .then((res) => res.json())
+      .then((data) => setReservations(data.map((r: any) => r.event_id)));
+
     fetch("/api/users/me")
-      .then((res) => {
-        if (!res.ok) throw new Error("No autenticado");
-        return res.json();
-      })
-      .then((data) => {
-        if (Array.isArray(data.intereses)) {
-          setUserPreferences(data.intereses);
-        }
-      })
-      .catch((err) => {
-        console.error("Error al obtener preferencias:", err);
-      });
+      .then((res) => res.json())
+      .then((data) => setUserPreferences(data.intereses || []));
   }, []);
 
   useEffect(() => {
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=Santiago,CL&appid=ec3b5c9883b52b8166d108472217ea8d&units=metric`)
-      .then(res => res.json())
-      .then(data => {
-        const weatherMain = data.weather[0].main.toLowerCase();
-        if (weatherMain.includes("rain")) setCurrentWeather("lluvia");
-        else if (weatherMain.includes("clear")) setCurrentWeather("soleado");
-        else setCurrentWeather("indiferente");
-      })
-      .catch(err => {
-        console.error("Error al obtener el clima:", err);
-        setCurrentWeather("indiferente");
-      });
-  }, []);
+    async function fetchClearSkyEvents() {
+      const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+      if (!apiKey) return;
 
-  const eventsGeneral = events.slice(0, 5);
+      const clearSkyEvents: FullEvent[] = [];
 
-  const eventsRecomen = events.filter((event) => {
-    const eventPrefs = [event.preference_1, event.preference_2, event.preference_3].filter(Boolean);
-    return eventPrefs.some((pref) => userPreferences.includes(pref));
-  }).slice(0, 5);
+      for (const event of events.filter((e) => !reservations.includes(e.event_id))) {
+        try {
+          const eventDate = new Date(event.event_date);
+          const [h, m, s] = event.start_time.split(":").map(Number);
+          eventDate.setHours(h, m, s || 0);
 
-  const eventsweather = events
-    .filter((e) => e.weather_preference === currentWeather || e.weather_preference === "indiferente")
-    .slice(0, 5);
+          // Convertir a zona horaria chilena
+          const localDate = new Date(
+            eventDate.toLocaleString("en-US", { timeZone: "America/Santiago" })
+          );
 
-  const eventsclosecall = [...events]
-    .filter(e => e.event_date)
-    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
-    .slice(0, 5);
+          const timestamp = Math.floor(localDate.getTime() / 1000);
+
+          const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${event.lat}&lon=${event.lng}&appid=${apiKey}&units=metric`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          const closest = data.list.reduce((prev: any, curr: any) =>
+            Math.abs(curr.dt - timestamp) < Math.abs(prev.dt - timestamp) ? curr : prev
+          );
+
+          const description = closest.weather?.[0]?.description;
+          if (description === "clear sky") {
+            clearSkyEvents.push(event);
+          }
+        } catch (e) {
+          console.error("Error obteniendo clima para evento", event.event_id, e);
+        }
+      }
+
+      setEventosDespejados(clearSkyEvents);
+    }
+
+    fetchClearSkyEvents();
+  }, [events, reservations]);
 
   const handleLogout = async () => {
     try {
@@ -138,54 +91,31 @@ export default function EventList() {
     }
   };
 
-  const renderSection = (titulo: string, eventos: FullEvent[]) => (
-    <section className="w-full bg-white border-b border-gray-300 py-6 px-6 rounded-lg shadow-lg mb-6">
-      <h2 className="text-xl font-semibold mb-4 text-left">{titulo}</h2>
-      <div className="flex overflow-x-auto space-x-4 pb-2 scroll-smooth">
-        {eventos.map((event) => (
-          <Link
-            href={`/frontend/eventos/${event.event_id}`}
-            key={event.event_id}
-            className="min-w-[350px] max-w-[350px] bg-white rounded-lg shadow-md flex-shrink-0"
-          >
-            <motion.div
-              className="cursor-pointer flex flex-col"
-              whileHover={{ scale: 1.02 }}
-            >
-              {event.image && (
-                <Image
-                  src={event.image}
-                  alt={event.event_name}
-                  width={350}
-                  height={400}
-                  className="rounded-t-lg object-cover h-[180px] w-full"
-                />
-              )}
-              <div className="p-4 flex flex-col justify-between h-full">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {event.event_name}
-                </h3>
-                <p className="text-gray-600 line-clamp-2">{event.description}</p>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleAttendance(event.event_id);
-                  }}
-                  className={`mt-3 px-4 py-2 rounded font-medium transition-colors duration-200 ${
-                    attending[event.event_id]
-                      ? "bg-green-600 text-white hover:bg-green-700"
-                      : "bg-gray-300 text-gray-900 hover:bg-gray-400"
-                  }`}
-                >
-                  {attending[event.event_id] ? "Asistiendo ✅" : "Asistir"}
-                </button>
-              </div>
-            </motion.div>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
+  const handleToggleAttendance = async (eventId: number) => {
+    if (!reservations.includes(eventId)) {
+      await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId }),
+      });
+      setReservations([...reservations, eventId]);
+    }
+  };
+
+  const filteredEvents = events.filter((e) => !reservations.includes(e.event_id));
+
+  const sections = {
+    "Eventos Generales": filteredEvents, // sin filtro, todos
+    "Eventos Recomendados": filteredEvents
+      .filter((e) =>
+        [e.preference_1, e.preference_2, e.preference_3].some((p) => userPreferences.includes(p))
+      )
+      .slice(0, 5),
+    "Eventos con Clima Despejado": eventosDespejados,
+    "Eventos Próximos": [...filteredEvents]
+      .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+      .slice(0, 5),
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen p-6 bg-gray-100 text-gray-900">
@@ -212,24 +142,73 @@ export default function EventList() {
             ×
           </button>
           <nav className="mt-16 flex flex-col items-start space-y-4 px-6 text-gray-800">
-            <button onClick={() => { router.push('/frontend/eventos'); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos</button>
-            <button onClick={() => { router.push("/frontend/profile"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Perfil</button>
-            <button onClick={() => { router.push("/frontend/save-events"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Eventos Guardados</button>
-            <button onClick={() => { router.push("/frontend/my-plans"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Mis Planes</button>
-            <button onClick={() => { router.push("/frontend/organize"); setIsSidebarOpen(false); }} className="hover:text-blue-600">Organizar Evento</button>
-            <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className="mt-4 text-red-600 hover:text-red-800 font-semibold">Cerrar Sesión</button>
+            <button
+              onClick={() => {
+                router.push("/frontend/eventos");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Eventos
+            </button>
+            <button
+              onClick={() => {
+                router.push("/frontend/profile");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Perfil
+            </button>
+            <button
+              onClick={() => {
+                router.push("/frontend/save-events");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Eventos Guardados
+            </button>
+            <button
+              onClick={() => {
+                router.push("/frontend/my-plans");
+                setIsSidebarOpen(false);
+              }}
+              className="hover:text-blue-600"
+            >
+              Mis Planes
+            </button>
+            <button
+              onClick={() => {
+                handleLogout();
+                setIsSidebarOpen(false);
+              }}
+              className="mt-4 text-red-600 hover:text-red-800 font-semibold"
+            >
+              Cerrar Sesión
+            </button>
           </nav>
         </div>
       </nav>
 
       <h1 className="text-4xl font-bold mt-6 mb-6 text-gray-800">Eventos</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <div className="w-full px-6 py-4">
-        {renderSection("Eventos Generales", eventsGeneral)}
-        {renderSection("Eventos Recomendados", eventsRecomen)}
-        {renderSection("Eventos Para el Clima", eventsweather)}
-        {renderSection("Eventos Próximos", eventsclosecall)}
+        {Object.entries(sections).map(([title, list]) => (
+          <section key={title} className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">{title}</h2>
+            <div className="flex space-x-4 overflow-x-auto">
+              {list.map((event) => (
+                <EventCard
+                  key={event.event_id}
+                  event={event}
+                  attending={false}
+                  onToggleAttendance={handleToggleAttendance}
+                />
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
     </div>
   );

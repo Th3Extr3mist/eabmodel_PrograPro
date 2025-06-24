@@ -2,65 +2,71 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import TimePicker from '../../components/TimePicker';
+import TimePicker from '../../../components/TimePicker';
 
-const MapPicker = dynamic(() => import('../../components/MapPicker'), { ssr: false });
+const MapPicker = dynamic(() => import('../../../components/MapPicker'), { ssr: false });
 
 type Location = { location_id: number; name?: string; address?: string };
 type Organizer = { organizer_id: number; organizer_name: string };
 
-export default function OrganizePage() {
+export default function EditEventPage() {
   const router = useRouter();
+  const params = useParams();
+  const eventId = params.id as string;
+
   const [mounted, setMounted] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
   const [evento, setEvento] = useState({
-     event_name: '',
-  event_date: '',
-  description: '',
-  start_time: '12:00',
-  end_time: '13:00',
-  organizer_id: 0,
-  location_id: 0,
-  price: '',
-  availability: '',
-  lat: -33.0245,
-  lng: -71.5518,
-  preference_1: '',
-  preference_2: '',
-  preference_3: '',
-  weather_preference: '',
+    event_name: '',
+    event_date: '',
+    description: '',
+    start_time: '12:00',
+    end_time: '13:00',
+    organizer_id: 0,
+    location_id: 0,
+    price: '',
+    availability: '',
+    lat: -33.0245,
+    lng: -71.5518,
+    preference_1: '',
+    preference_2: '',
+    preference_3: '',
+    weather_preference: '',
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
     setMounted(true);
+
+    if (eventId) {
+      fetch(`/api/events/${eventId}`)
+        .then(res => res.json())
+        .then(data => {
+          const normalizeTime = (time: string) => {
+            if (!time) return '00:00';
+            const match = time.match(/^(\d{2}):(\d{2})/);
+            return match ? `${match[1]}:${match[2]}` : '00:00';
+          };
+
+          setEvento({
+            ...data,
+            start_time: normalizeTime(data.start_time),
+            end_time: normalizeTime(data.end_time),
+          });
+        })
+        .catch(err => console.error('Error al cargar evento:', err));
+    }
+
     fetch('/api/locations').then(r => r.json()).then(setLocations);
     fetch('/api/organizers').then(r => r.json()).then(setOrganizers);
-    console.log(organizers);
-    
-    const handleClickOutside = (e: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
-        setIsSidebarOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
-    router.push('/frontend/login');
-  };
+  }, [eventId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -69,7 +75,7 @@ export default function OrganizePage() {
     setEvento(prev => ({
       ...prev,
       [name]: ['organizer_id', 'location_id'].includes(name)
-        ? parseInt(value, 10) || 0 
+        ? parseInt(value, 10) || 0
         : value,
     }));
   };
@@ -91,9 +97,11 @@ export default function OrganizePage() {
     setError(null);
     setSuccess(null);
 
+    const cleanTime = (time: string) => time.slice(0, 5);
+
     if (
-      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(evento.start_time) ||
-      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(evento.end_time)
+      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(cleanTime(evento.start_time)) ||
+      !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(cleanTime(evento.end_time))
     ) {
       setError('Horas inválidas');
       return;
@@ -104,7 +112,6 @@ export default function OrganizePage() {
       return;
     }
 
-    // Validation for invalid organizer or location
     if (evento.organizer_id && !organizers.some(o => o.organizer_id === evento.organizer_id)) {
       setError('Organizador no válido');
       return;
@@ -116,15 +123,21 @@ export default function OrganizePage() {
     }
 
     const form = new FormData();
-    Object.entries(evento).forEach(([k, v]) => form.append(k, String(v)));
+    Object.entries(evento).forEach(([k, v]) => {
+      if (k === 'start_time' || k === 'end_time') {
+        form.append(k, cleanTime(v as string));
+      } else {
+        form.append(k, String(v));
+      }
+    });
     if (imageFile) form.append('image', imageFile);
 
-    const res = await fetch('/api/events', { method: 'POST', body: form });
+    const res = await fetch(`/api/events/${eventId}`, { method: 'PUT', body: form });
     if (!res.ok) {
       setError(await res.text());
     } else {
-      setSuccess('Evento creado correctamente');
-      alert('¡Evento creado correctamente!');
+      setSuccess('Evento actualizado correctamente');
+      alert('¡Evento actualizado correctamente!');
       setTimeout(() => router.push('/frontend/profileorga'), 2000);
     }
   };
@@ -134,12 +147,9 @@ export default function OrganizePage() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <div className="flex flex-col min-h-screen bg-gray-100 p-6 text-gray-900">
-        {/* NAVBAR */}
-
-        {/* FORMULARIO */}
         <div className="flex items-center justify-center">
           <div className="bg-white w-full max-w-lg p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold mb-6 text-center">Crear Evento</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">Editar Evento</h2>
             {error && <p className="text-red-500 mb-4">{error}</p>}
             {success && <p className="text-green-600 mb-4">{success}</p>}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -190,7 +200,7 @@ export default function OrganizePage() {
               />
               <input
                 name="weather_preference"
-                placeholder="Clima preferente para el evento (despejado o lluvia)"
+                placeholder="Clima preferente (despejado o lluvia)"
                 className="w-full p-2 border rounded"
                 value={evento.weather_preference}
                 onChange={handleChange}
@@ -207,7 +217,6 @@ export default function OrganizePage() {
                   onChange={handleTimeChange('end_time')}
                 />
               </div>
-
               <select
                 name="organizer_id"
                 className="w-full p-2 border rounded"
@@ -216,13 +225,12 @@ export default function OrganizePage() {
                 required
               >
                 <option value={0}>-- Organizador --</option>
-                {organizers.map((o) => (
+                {organizers.map(o => (
                   <option key={o.organizer_id} value={o.organizer_id}>
                     {o.organizer_name}
                   </option>
                 ))}
               </select>
-
               <select
                 name="location_id"
                 className="w-full p-2 border rounded"
@@ -231,13 +239,12 @@ export default function OrganizePage() {
                 required
               >
                 <option value={0}>-- Ubicación --</option>
-                {locations.map((l) => (
+                {locations.map(l => (
                   <option key={l.location_id} value={l.location_id}>
                     {l.name ?? l.address}
                   </option>
                 ))}
               </select>
-
               <input
                 name="price"
                 placeholder="Precio"
@@ -246,7 +253,6 @@ export default function OrganizePage() {
                 onChange={handleChange}
                 required
               />
-
               <input
                 name="availability"
                 type="number"
@@ -256,23 +262,20 @@ export default function OrganizePage() {
                 onChange={handleChange}
                 required
               />
-
               <MapPicker lat={evento.lat} lng={evento.lng} onChange={handleMapChange} />
-
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
                 className="w-full p-2 border rounded"
               />
-
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
                 sx={{ backgroundColor: '#16A34A', color: 'white' }}
               >
-                Guardar Evento
+                Editar Evento
               </Button>
             </form>
           </div>
