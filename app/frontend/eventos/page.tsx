@@ -69,7 +69,7 @@ export default function EventList() {
   const filteredEvents = events.filter((e) => !reservations.includes(e.event_id));
 
   const sections = {
-    "Eventos Generales": filteredEvents.slice(0, 5),
+    "Eventos Generales": events,
     "Eventos Recomendados": filteredEvents.filter((e) =>
       [e.preference_1, e.preference_2, e.preference_3].some((p) => userPreferences.includes(p))
     ).slice(0, 5),
