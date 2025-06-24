@@ -35,7 +35,6 @@ export default function EventDetail({
   availability,
   eventlocation,
 }: EventDetailProps) {
-  // Solo cambiamos la forma de parsear la fecha, la hora queda igual
   const [y, m, d] = event_date.split("T")[0].split("-").map(Number);
   const fechaStr = new Date(y, m - 1, d).toLocaleDateString();
 
@@ -48,14 +47,20 @@ export default function EventDetail({
     minute: "2-digit",
   });
 
+  const isBase64Image = image && image.startsWith("data:image");
+
   return (
     <article className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      {image && (
+      {isBase64Image ? (
         <img
-          src={image}
+          src={image!}
           alt={`Imagen del evento: ${event_name}`}
           className="w-full h-64 object-cover rounded-md mb-4"
         />
+      ) : (
+        <div className="w-full h-64 bg-gray-200 rounded-md mb-4 flex items-center justify-center text-gray-500">
+          Imagen no disponible
+        </div>
       )}
 
       <h1 className="text-3xl font-semibold mb-2 text-gray-800">{event_name}</h1>
@@ -89,4 +94,3 @@ export default function EventDetail({
     </article>
   );
 }
-
