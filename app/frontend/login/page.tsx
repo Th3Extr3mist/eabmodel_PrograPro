@@ -45,18 +45,18 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
-      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex justify-between items-center">
+      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
-        <div>
+        <div className="flex flex-col sm:flex-row gap-2 w-fit self-center sm:self-auto">
           <button
             onClick={() => router.push("/frontend/register")}
-            className="bg-blue-500 text-white px-4 py-1 rounded mx-2 hover:bg-blue-600"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Registrarse
           </button>
           <button
             onClick={() => router.push("/frontend/loginorga")}
-            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Organizador
           </button>

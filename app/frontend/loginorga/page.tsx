@@ -41,13 +41,13 @@ export default function LoginOrgaPage() {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100 text-gray-900">
-      <nav className="w-full bg-white py-3 px-6 flex justify-between items-center shadow-md">
-        <h1 className="text-lg font-bold">Login Organizador</h1>
-        <div>
-          <button onClick={() => router.push("/frontend/login")} className="bg-blue-500 text-white px-4 py-1 rounded mx-2 hover:bg-blue-600">
+      <nav className="w-full bg-white border-b border-gray-300 py-3 px-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <h1 className="text-lg font-bold text-gray-900">Iniciar Sesión</h1>
+        <div className="flex flex-col sm:flex-row gap-2 w-fit self-center sm:self-auto">
+          <button onClick={() => router.push("/frontend/login")} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
             Asistente
           </button>
-          <button onClick={() => router.push("/frontend/registerorga")} className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">
+          <button onClick={() => router.push("/frontend/registerorga")} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
             Registrarse
           </button>
         </div>

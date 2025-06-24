@@ -67,6 +67,12 @@ export default function RegisterOrgaPage() {
           <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Registrarse
           </button>
+          <button
+            onClick={() => router.push("/frontend/loginorga")}
+            className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+           inciar sesion Organizador
+          </button>
         </form>
       </div>
     </div>
