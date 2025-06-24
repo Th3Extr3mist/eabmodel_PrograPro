@@ -161,18 +161,14 @@ export class EventController {
       }
 
       // Procesar imagen si existe
-      const file = formData.get("image");
-      if (file && typeof (file as any).arrayBuffer === "function") {
-        const imageFile = file as File;
-        const buffer = Buffer.from(await imageFile.arrayBuffer());
-        const uploadsDir = path.join(process.cwd(), "public", "uploads");
-        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-        const filename = `${Date.now()}-${imageFile.name}`;
-        const filepath = path.join(uploadsDir, filename);
-        await fs.promises.writeFile(filepath, buffer);
-        dtoRaw.image = `/uploads/${filename}`;
-      }
-
+const file = formData.get("image");
+if (file && typeof (file as any).arrayBuffer === "function") {
+  const imageFile = file as File;
+  const buffer = Buffer.from(await imageFile.arrayBuffer());
+  const base64 = buffer.toString("base64");
+  const mimeType = imageFile.type || "image/jpeg";
+  dtoRaw.image = `data:${mimeType};base64,${base64}`;
+}
       // Validación de campos obligatorios manuales
       if (!dtoRaw.organizer_id || !dtoRaw.location_id) {
         return NextResponse.json({
