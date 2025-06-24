@@ -12,7 +12,7 @@ export default function EventList() {
   const [events, setEvents] = useState<FullEvent[]>([]);
   const [reservations, setReservations] = useState<number[]>([]);
   const [userPreferences, setUserPreferences] = useState<string[]>([]);
-  const [currentWeather, setCurrentWeather] = useState<"soleado" | "lluvia" | "indiferente">("indiferente");
+  const [clearSkyEvents, setClearSkyEvents] = useState<number[]>([]); // IDs con clima despejado
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -26,24 +26,53 @@ export default function EventList() {
   };
 
   useEffect(() => {
-    fetch("/api/events")
-      .then((res) => res.json())
-      .then((data) => setEvents(data));
+    const fetchAll = async () => {
+      const [eventRes, reservationRes, userRes] = await Promise.all([
+        fetch("/api/events"),
+        fetch("/api/reservations"),
+        fetch("/api/users/me"),
+      ]);
 
-    fetch("/api/reservations")
-      .then((res) => res.json())
-      .then((data) => setReservations(data.map((r: any) => r.event_id)));
+      const eventData: FullEvent[] = await eventRes.json();
+      const reservationData = await reservationRes.json();
+      const userData = await userRes.json();
 
-    fetch("/api/users/me")
-      .then((res) => res.json())
-      .then((data) => setUserPreferences(data.intereses || []));
+      setEvents(eventData);
+      setReservations(reservationData.map((r: any) => r.event_id));
+      setUserPreferences(userData.intereses || []);
 
-    fetch(`https://api.openweathermap.org/data/2.5/weather?q=Santiago,CL&appid=ec3b5c9883b52b8166d108472217ea8d&units=metric`)
-      .then((res) => res.json())
-      .then((data) => {
-        const main = data.weather[0].main.toLowerCase();
-        setCurrentWeather(main.includes("rain") ? "lluvia" : main.includes("clear") ? "soleado" : "indiferente");
-      });
+      // Buscar eventos con clima despejado (clear sky)
+      const clearEvents: number[] = [];
+      const apiKey = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
+
+      for (const ev of eventData) {
+        const lat = ev.lat;
+        const lon = ev.lng;
+        const startDate = new Date(`${ev.event_date}T${ev.start_time}`);
+        const ts = Math.floor(startDate.getTime() / 1000);
+
+        try {
+          const res = await fetch(
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`
+          );
+          const data = await res.json();
+
+          const closest = data.list.reduce((prev: any, curr: any) =>
+            Math.abs(curr.dt - ts) < Math.abs(prev.dt - ts) ? curr : prev
+          );
+
+          if (closest.weather?.[0]?.description === "clear sky") {
+            clearEvents.push(ev.event_id);
+          }
+        } catch (e) {
+          console.error("Error obteniendo clima:", e);
+        }
+      }
+
+      setClearSkyEvents(clearEvents);
+    };
+
+    fetchAll();
   }, []);
 
   const handleLogout = async () => {
@@ -67,15 +96,16 @@ export default function EventList() {
   };
 
   const filteredEvents = events.filter((e) => !reservations.includes(e.event_id));
+  const clearSkyFilteredEvents = filteredEvents.filter((e) => clearSkyEvents.includes(e.event_id));
 
   const sections = {
-    "Eventos Generales": events,
-    "Eventos Recomendados": filteredEvents.filter((e) =>
-      [e.preference_1, e.preference_2, e.preference_3].some((p) => userPreferences.includes(p))
-    ).slice(0, 5),
-    "Eventos Para el Clima": filteredEvents.filter(
-      (e) => e.weather_preference === currentWeather || e.weather_preference === "indiferente"
-    ).slice(0, 5),
+    "Eventos Generales": events, // mostrar todos
+    "Eventos Recomendados": filteredEvents
+      .filter((e) =>
+        [e.preference_1, e.preference_2, e.preference_3].some((p) => userPreferences.includes(p))
+      )
+      .slice(0, 5),
+    "Eventos con Clima Despejado": clearSkyFilteredEvents.slice(0, 5),
     "Eventos Próximos": [...filteredEvents]
       .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
       .slice(0, 5),
@@ -126,7 +156,7 @@ export default function EventList() {
                 <EventCard
                   key={event.event_id}
                   event={event}
-                  attending={false}
+                  attending={reservations.includes(event.event_id)}
                   onToggleAttendance={handleToggleAttendance}
                 />
               ))}
